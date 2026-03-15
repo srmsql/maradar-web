@@ -1303,12 +1303,15 @@ const C = {
 };
 
 const PREVIEW_DEALS = [
-  {ticker:"MASI", target:"Masimo Corp.",        acquirer:"Danaher",          value:"$9.9B",  spread:"+3.1%", signal:"COMPRAR",  sc:"#10b981"},
-  {ticker:"VRE",  target:"Veris Residential",   acquirer:"Affinius Capital", value:"$3.4B",  spread:"+1.3%", signal:"COMPRAR",  sc:"#10b981"},
-  {ticker:"NATL", target:"NCR Atleos",          acquirer:"Brink's (BCO)",    value:"$6.6B",  spread:"+5.4%", signal:"ACUMULAR", sc:"#3b82f6"},
-  {ticker:"TALK", target:"Talkspace",           acquirer:"UHS",              value:"$835M",  spread:"+1.3%", signal:"COMPRAR",  sc:"#10b981"},
-  {ticker:"CWAN", target:"Clearwater Analytics",acquirer:"Permira+Warburg",  value:"$8.4B",  spread:"🔒",    signal:"🔒",        sc:"#4a6080"},
-  {ticker:"PEN",  target:"Penumbra Inc.",       acquirer:"Boston Scientific", value:"$14.5B", spread:"🔒",    signal:"🔒",        sc:"#4a6080"},
+  // ── Completados ──────────────────────────────────────────────────────────
+  {ticker:"ATVI", target:"Activision Blizzard", acquirer:"Microsoft",       value:"$68.7B", spread:"+2.9%", signal:"COMPLETADO", sc:"#6b7280", stage:"Completado", stageColor:"#6b7280", done:true,    locked:false, ret:"+$290", days:47, annualized:"~25%", closed:"Oct 2023"},
+  {ticker:"PXD",  target:"Pioneer Natural",     acquirer:"ExxonMobil",      value:"$59.5B", spread:"+4.1%", signal:"COMPLETADO", sc:"#6b7280", stage:"Completado", stageColor:"#6b7280", done:true,    locked:false, ret:"+$410", days:62, annualized:"~27%", closed:"May 2024"},
+  {ticker:"K",    target:"Kellanova",           acquirer:"Mars Inc.",       value:"$35.9B", spread:"+3.6%", signal:"COMPLETADO", sc:"#6b7280", stage:"Completado", stageColor:"#6b7280", done:true,    locked:false, ret:"+$360", days:38, annualized:"~41%", closed:"Mar 2025"},
+  // ── Activo desbloqueado — mejor spread actual ────────────────────────────
+  {ticker:"KVUE", target:"Kenvue",              acquirer:"Kimberly-Clark",  value:"$48.7B", spread:"+20.1%",signal:"ACUMULAR",   sc:"#3b82f6", stage:"Regulatorio", stageColor:"#f97316", done:false,   locked:false, ret:null, days:null, annualized:null, closed:null, prob:78, payment:"⚖️ Mixto"},
+  // ── Bloqueados ───────────────────────────────────────────────────────────
+  {ticker:"NATL", target:"NCR Atleos",          acquirer:"Brink's (BCO)",   value:"$6.6B",  spread:"🔒",    signal:"🔒",         sc:"#4a6080", stage:"Regulatorio", stageColor:"#f97316", done:false,   locked:true,  ret:null, days:null, annualized:null, closed:null, prob:null, payment:null},
+  {ticker:"MASI", target:"Masimo Corp.",        acquirer:"Danaher",         value:"$9.9B",  spread:"🔒",    signal:"🔒",         sc:"#4a6080", stage:"Pre-Cierre",  stageColor:"#10b981", done:false,   locked:true,  ret:null, days:null, annualized:null, closed:null, prob:null, payment:null},
 ];
 
 function TickerBanner() {
@@ -1326,19 +1329,63 @@ function TickerBanner() {
 }
 
 function DealPreviewRow({deal}) {
-  const locked = deal.spread === "🔒";
   return (
-    <div className="preview-row" style={{display:"grid",gridTemplateColumns:"72px 1fr 80px 80px",alignItems:"center",gap:8,padding:"10px 16px",borderBottom:`1px solid ${C.border}`,opacity:locked?0.5:1,transition:"background 0.15s",cursor:"default"}}
+    <div style={{display:"grid",gridTemplateColumns:"72px 1fr 260px",alignItems:"center",padding:"14px 28px",borderBottom:`1px solid ${C.border}`,opacity:deal.locked?0.5:1,transition:"background 0.15s",cursor:"default"}}
       onMouseEnter={e=>e.currentTarget.style.background=C.bgMid}
       onMouseLeave={e=>e.currentTarget.style.background="transparent"}
     >
-      <div style={{background:C.border,borderRadius:6,padding:"4px 6px",fontSize:10,color:C.textMid,fontFamily:"'JetBrains Mono',monospace",fontWeight:700,textAlign:"center"}}>{deal.ticker}</div>
-      <div style={{minWidth:0}}>
-        <div style={{fontSize:12,color:C.text,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{deal.target}</div>
-        <div className="preview-sub" style={{fontSize:10,color:C.textDim,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>by {deal.acquirer} · {deal.value}</div>
+      {/* TICKER */}
+      <div style={{background:C.border,borderRadius:6,padding:"5px 6px",fontSize:10,color:C.textMid,fontFamily:"'JetBrains Mono',monospace",fontWeight:700,textAlign:"center",width:"fit-content"}}>{deal.ticker}</div>
+
+      {/* EMPRESA + STAGE */}
+      <div style={{minWidth:0,paddingLeft:4}}>
+        <div style={{fontSize:12,color:deal.done?C.textMid:C.text,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{deal.target}</div>
+        <div style={{display:"flex",alignItems:"center",gap:4,marginTop:3,flexWrap:"nowrap"}}>
+          <span style={{width:5,height:5,borderRadius:"50%",background:deal.stageColor,display:"inline-block",flexShrink:0}}/>
+          <span style={{fontSize:9,color:deal.stageColor,fontWeight:600,whiteSpace:"nowrap"}}>{deal.stage}</span>
+          {deal.done && <span style={{fontSize:9,color:"#334155",whiteSpace:"nowrap",marginLeft:2}}>· {deal.closed} · {deal.days}d</span>}
+          {!deal.done && !deal.locked && deal.payment && <span style={{fontSize:9,color:"#4a6080",whiteSpace:"nowrap",marginLeft:4}}>{deal.payment}</span>}
+        </div>
       </div>
-      <div style={{fontSize:12,color:locked?C.textDim:"#10b981",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,textAlign:"right"}}>{deal.spread}</div>
-      <div style={{background:locked?C.border:deal.sc+"22",border:`1px solid ${locked?C.border:deal.sc+"55"}`,borderRadius:5,padding:"3px 6px",fontSize:9,color:locked?C.textDim:deal.sc,fontWeight:700,letterSpacing:0.5,textAlign:"center"}}>{deal.signal}</div>
+
+      {/* COLUMNA DERECHA */}
+      {deal.done ? (
+        // Completado
+        <div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"flex-end"}}>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:13,color:"#10b981",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,whiteSpace:"nowrap"}}>{deal.ret} <span style={{fontSize:10,color:"#334155"}}>{deal.spread}</span></div>
+            <div style={{fontSize:9,color:"#1e3a5f",whiteSpace:"nowrap",marginTop:1}}>sobre $10,000</div>
+          </div>
+          <div style={{background:"#10b98114",border:"1px solid #10b98130",borderRadius:6,padding:"5px 9px",textAlign:"center",flexShrink:0}}>
+            <div style={{fontSize:12,color:"#10b981",fontWeight:800}}>{deal.annualized}</div>
+            <div style={{fontSize:8,color:"#10b98170",letterSpacing:0.5}}>ANUAL</div>
+          </div>
+        </div>
+      ) : deal.locked ? (
+        // Bloqueado
+        <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-end"}}>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:10,color:"#1e3a5f"}}>spread · señal</div>
+            <div style={{fontSize:9,color:"#0d1e30",marginTop:2}}>Plan Premium</div>
+          </div>
+          <div style={{background:"#0a1628",border:"1px solid #1e293b",borderRadius:6,padding:"6px 10px",fontSize:14,color:"#1e3a5f"}}>🔒</div>
+        </div>
+      ) : (
+        // Activo desbloqueado — mostrar todo
+        <div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"flex-end"}}>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:15,color:"#10b981",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,whiteSpace:"nowrap"}}>{deal.spread}</div>
+            <div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end",marginTop:3}}>
+              <span style={{fontSize:9,color:"#4a6080"}}>prob. cierre</span>
+              <span style={{fontSize:9,color:"#3b82f6",fontWeight:700}}>{deal.prob}%</span>
+            </div>
+          </div>
+          <div style={{background:"#3b82f614",border:"1px solid #3b82f630",borderRadius:6,padding:"5px 9px",textAlign:"center",flexShrink:0}}>
+            <div style={{fontSize:11,color:"#3b82f6",fontWeight:800,whiteSpace:"nowrap"}}>{deal.signal}</div>
+            <div style={{fontSize:8,color:"#3b82f670",letterSpacing:0.3}}>SEÑAL</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1404,7 +1451,7 @@ function Landing({onEnter, onToggleLang, lang}) {
           .stats-grid{grid-template-columns:repeat(2,1fr)!important}
           .why-grid{grid-template-columns:1fr!important}
           .tiers-grid{grid-template-columns:1fr!important}
-          .preview-row{grid-template-columns:52px 1fr 52px 60px!important;gap:6px!important}
+          .preview-row{grid-template-columns:46px 1fr 48px 62px!important;gap:5px!important;padding:10px 12px!important}
           .preview-header{display:none!important}
           .hero-section{padding:60px 20px 40px!important}
           .section-pad{padding:40px 20px!important}
@@ -1413,7 +1460,7 @@ function Landing({onEnter, onToggleLang, lang}) {
           .footer-inner{flex-direction:column;gap:16px;text-align:center}
         }
         @media(max-width:480px){
-          .preview-row{grid-template-columns:46px 1fr 48px 55px!important;gap:4px!important}
+          .preview-row{grid-template-columns:40px 1fr 44px 58px!important;gap:4px!important;padding:8px 10px!important}
           .tier-name{font-size:28px!important}
         }
       `}</style>
@@ -1463,12 +1510,12 @@ function Landing({onEnter, onToggleLang, lang}) {
       </section>
 
       {/* DASHBOARD PREVIEW */}
-      <section id="como" className="section-pad-sm" style={{padding:"20px 40px 80px",maxWidth:900,margin:"0 auto"}}>
-        <div style={{marginBottom:32,textAlign:"center"}}>
+      <section id="como" className="section-pad-sm" style={{padding:"20px 0 80px",maxWidth:"100%",margin:"0 auto"}}>
+        <div style={{marginBottom:32,textAlign:"center",maxWidth:960,margin:"0 auto 32px"}}>
           <div style={{fontSize:10,color:C.textDim,letterSpacing:2,marginBottom:10}}>{t.dashSub}</div>
           <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:28,fontWeight:800}}>{t.dashTitle}</h2>
         </div>
-        <div style={{background:C.bgMid,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",boxShadow:"0 24px 80px rgba(0,0,0,0.6)"}}>
+        <div style={{background:C.bgMid,border:`1px solid ${C.border}`,borderRadius:0,overflow:"hidden",boxShadow:"0 24px 80px rgba(0,0,0,0.6)",width:"100%"}}>
           <div style={{background:C.bg,borderBottom:`1px solid ${C.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",gap:6}}>
               {["#ef4444","#f59e0b","#10b981"].map((c,i)=><div key={i} style={{width:10,height:10,borderRadius:"50%",background:c}}/>)}
@@ -1479,8 +1526,10 @@ function Landing({onEnter, onToggleLang, lang}) {
               {t.liveTag}
             </div>
           </div>
-          <div className="preview-row" style={{display:"grid",gridTemplateColumns:"72px 1fr 80px 80px",gap:8,padding:"8px 16px",borderBottom:`1px solid ${C.border}`}}>
-            {["TICKER","EMPRESA","SPREAD","SEÑAL"].map((h,i)=><div key={i} style={{fontSize:9,color:C.textDim,letterSpacing:1}}>{h}</div>)}
+          <div style={{display:"grid",gridTemplateColumns:"72px 1fr 260px",alignItems:"center",padding:"9px 28px",borderBottom:`1px solid ${C.border}`,background:C.bg}}>
+            <div style={{fontSize:9,color:C.textDim,letterSpacing:0.8}}>TICKER</div>
+            <div style={{fontSize:9,color:C.textDim,letterSpacing:0.8}}>EMPRESA · STAGE</div>
+            <div style={{fontSize:9,color:C.textDim,letterSpacing:0.8,textAlign:"right"}}>RETORNO · SPREAD · TIR ANUAL</div>
           </div>
           {PREVIEW_DEALS.map((d,i)=><DealPreviewRow key={i} deal={d}/>)}
           <div style={{padding:"20px 16px",textAlign:"center"}}>
