@@ -783,7 +783,7 @@ function LockBadge({onUpgrade}) {
 }
 
 // ─── DEAL CARD ────────────────────────────────────────────────────────────────
-function DealCard({deal, onClick, selected, isPremium, onUpgrade}) {
+function DealCard({deal, onClick, selected, isPremium, onUpgrade, watched, onToggleWatch}) {
   const t = useT();
   const stage = STAGE_CFG[deal.stage] || STAGE_CFG.announced;
   return (
@@ -847,7 +847,17 @@ function DealCard({deal, onClick, selected, isPremium, onUpgrade}) {
         <span style={{background:stage.color+"14", color:stage.color, borderRadius:5, padding:"2px 8px", fontSize:9, fontWeight:700, letterSpacing:0.8, border:`1px solid ${stage.color}30`}}>
           {stage.label}
         </span>
-        <span style={{fontSize:10, color:TXT3, fontFamily:"'JetBrains Mono',monospace"}}>{deal.expectedClose}</span>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:10, color:TXT3, fontFamily:"'JetBrains Mono',monospace"}}>{deal.expectedClose}</span>
+          {isPremium
+            ? <button onClick={e=>{e.stopPropagation();onToggleWatch&&onToggleWatch();}} style={{background:watched?"#f59e0b22":"transparent",border:`1px solid ${watched?"#f59e0b44":BDR2}`,borderRadius:5,padding:"2px 7px",fontSize:11,color:watched?"#f59e0b":TXT3,cursor:"pointer",lineHeight:1,transition:"all 0.15s"}} title={watched?"Quitar de watchlist":"Añadir a watchlist"}>
+                {watched?"★":"☆"}
+              </button>
+            : <button onClick={e=>{e.stopPropagation();onUpgrade&&onUpgrade();}} style={{background:"transparent",border:`1px solid ${BDR2}`,borderRadius:5,padding:"2px 7px",fontSize:11,color:BDR2,cursor:"pointer",lineHeight:1}} title="Plan Premium">
+                🔒☆
+              </button>
+          }
+        </div>
       </div>
     </div>
   );
@@ -1075,6 +1085,19 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
   const [livePrices,    setLivePrices]    = useState({});
   const [pricesLoading, setPricesLoading] = useState(false);
   const [pricesUpdated, setPricesUpdated] = useState(null);
+  const [watchlist,     setWatchlist]     = useState(() => {
+    try { return JSON.parse(localStorage.getItem("maradar_watchlist")) || []; }
+    catch { return []; }
+  });
+  const [showWatchlist, setShowWatchlist] = useState(false);
+
+  function toggleWatch(dealId) {
+    setWatchlist(prev => {
+      const next = prev.includes(dealId) ? prev.filter(id => id !== dealId) : [...prev, dealId];
+      localStorage.setItem("maradar_watchlist", JSON.stringify(next));
+      return next;
+    });
+  }
 
   useEffect(() => {
     async function loadPrices() {
@@ -1198,6 +1221,12 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
                   <div style={{fontSize:10,fontWeight:700,letterSpacing:1,color:tier==="pro"?PURP:tier==="investor"?BLUE:"#475569",fontFamily:"monospace"}}>{tier.toUpperCase()}</div>
                 </div>
                 {!isPremium && <button onClick={onUpgrade} style={{background:`linear-gradient(135deg,${BLUE},${PURP})`,border:"none",borderRadius:7,padding:"5px 10px",color:"#fff",fontSize:10,fontWeight:700,letterSpacing:0.8,cursor:"pointer",fontFamily:"inherit"}}>{t.topUpgrade}</button>}
+                {isPremium && (
+                  <button onClick={()=>setShowWatchlist(w=>!w)} style={{position:"relative",background:showWatchlist?BLUE+"22":"transparent",border:`1px solid ${showWatchlist?BLUE+"66":BDR2}`,borderRadius:7,padding:"4px 10px",color:showWatchlist?BLUE:TXT3,fontSize:10,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
+                    ★ {lang==="es"?"Watchlist":"Watchlist"}
+                    {watchlist.length > 0 && <span style={{background:BLUE,color:"#fff",borderRadius:99,fontSize:8,fontWeight:700,padding:"1px 5px",minWidth:14,textAlign:"center"}}>{watchlist.length}</span>}
+                  </button>
+                )}
                 <button onClick={onToggleLang} style={{background:"transparent",border:`1px solid ${BDR2}`,borderRadius:7,padding:"4px 8px",color:TXT3,fontSize:10,cursor:"pointer",fontFamily:"inherit"}}>{lang==="es"?"EN":"ES"}</button>
                 <button onClick={onLogout} style={{background:"transparent",border:`1px solid ${BDR2}`,borderRadius:7,padding:"4px 8px",color:TXT3,fontSize:10,cursor:"pointer",fontFamily:"inherit"}}>↩</button>
               </>
@@ -1245,7 +1274,8 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
         <div className="dash-left" style={{borderRight:`1px solid ${BDR}`,display:"flex",flexDirection:"column",overflow:"hidden"}}>
           {/* Tabs */}
           <div style={{display:"flex",borderBottom:`1px solid ${BDR}`,flexShrink:0}}>
-            {[["deals",t.tabDeals],["glossary",t.tabGlossary]].map(([key,label]) => (
+            {[["deals",t.tabDeals],["glossary",t.tabGlossary],...(isPremium?[["watchlist","★ "+( lang==="es"?"Guardados":"Saved")+(watchlist.length>0?` (${watchlist.length})`:"")]]:[])]
+              .map(([key,label]) => (
               <button key={key} onClick={()=>setTab(key)} style={{flex:1,padding:"10px",background:"transparent",border:"none",borderBottom:`2px solid ${tab===key?BLUE:"transparent"}`,color:tab===key?BLUE:TXT3,fontSize:11,fontWeight:tab===key?700:400,cursor:"pointer",letterSpacing:0.5,fontFamily:"inherit",transition:"all 0.15s"}}>
                 {label}
               </button>
@@ -1253,7 +1283,21 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
           </div>
           {/* Content */}
           <div style={{overflowY:"auto",flex:1,padding:"12px"}}>
-            {tab === "deals" ? (
+            {tab === "watchlist" ? (
+              dealsWithLive.filter(d => watchlist.includes(d.id)).length === 0 ? (
+                <div style={{textAlign:"center",padding:"48px 24px"}}>
+                  <div style={{fontSize:28,marginBottom:12}}>★</div>
+                  <div style={{fontSize:13,color:TXT2,marginBottom:8,fontWeight:600}}>{lang==="es"?"Sin deals guardados":"No saved deals"}</div>
+                  <div style={{fontSize:11,color:"#334155",lineHeight:1.7}}>{lang==="es"?"Pulsa ★ en cualquier deal para guardarlo aquí.":"Click ★ on any deal to save it here."}</div>
+                </div>
+              ) : (
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {dealsWithLive.filter(d => watchlist.includes(d.id)).map(d => (
+                    <DealCard key={d.id} deal={d} onClick={setSelected} selected={selected?.id===d.id} isPremium={isPremium} onUpgrade={onUpgrade} watched={true} onToggleWatch={()=>toggleWatch(d.id)}/>
+                  ))}
+                </div>
+              )
+            ) : tab === "deals" ? (
               filtered.length === 0 ? (
                 <div style={{textAlign:"center",padding:"48px 24px"}}>
                   <div style={{fontSize:28,marginBottom:12}}>{search?"🔍":"📭"}</div>
@@ -1270,7 +1314,7 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
               ) : (
                 <div style={{display:"flex",flexDirection:"column",gap:8}}>
                   {filtered.map(d => (
-                    <DealCard key={d.id} deal={d} onClick={setSelected} selected={selected?.id===d.id} isPremium={isPremium} onUpgrade={onUpgrade}/>
+                    <DealCard key={d.id} deal={d} onClick={setSelected} selected={selected?.id===d.id} isPremium={isPremium} onUpgrade={onUpgrade} watched={watchlist.includes(d.id)} onToggleWatch={()=>toggleWatch(d.id)}/>
                   ))}
                 </div>
               )
