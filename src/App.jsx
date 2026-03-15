@@ -1573,7 +1573,7 @@ function Landing({onEnter, onToggleLang, lang}) {
       </section>
 
       {/* DASHBOARD PREVIEW */}
-      <section id="como" className="section-pad-sm preview-section" style={{padding:"20px 40px 80px",maxWidth:960,margin:"0 auto"}}>
+      <section id="como" style={{padding:"20px 40px 80px",maxWidth:960,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
         <div style={{marginBottom:32,textAlign:"center",maxWidth:960,margin:"0 auto 32px"}}>
           <div style={{fontSize:10,color:C.textDim,letterSpacing:2,marginBottom:10}}>{t.dashSub}</div>
           <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:28,fontWeight:800}}>{t.dashTitle}</h2>
