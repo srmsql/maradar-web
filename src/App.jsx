@@ -1330,60 +1330,53 @@ function TickerBanner() {
 
 function DealPreviewRow({deal}) {
   return (
-    <div style={{display:"grid",gridTemplateColumns:"72px 1fr 260px",alignItems:"center",padding:"14px 28px",borderBottom:`1px solid ${C.border}`,opacity:deal.locked?0.5:1,transition:"background 0.15s",cursor:"default"}}
+    <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 20px",borderBottom:`1px solid ${C.border}`,opacity:deal.locked?0.5:1,transition:"background 0.15s"}}
       onMouseEnter={e=>e.currentTarget.style.background=C.bgMid}
       onMouseLeave={e=>e.currentTarget.style.background="transparent"}
     >
       {/* TICKER */}
-      <div style={{background:C.border,borderRadius:6,padding:"5px 6px",fontSize:10,color:C.textMid,fontFamily:"'JetBrains Mono',monospace",fontWeight:700,textAlign:"center",width:"fit-content"}}>{deal.ticker}</div>
+      <div style={{flexShrink:0,background:C.border,borderRadius:6,padding:"4px 7px",fontSize:10,color:C.textMid,fontFamily:"'JetBrains Mono',monospace",fontWeight:700,minWidth:42,textAlign:"center"}}>{deal.ticker}</div>
 
       {/* EMPRESA + STAGE */}
-      <div style={{minWidth:0,paddingLeft:4}}>
+      <div style={{flex:1,minWidth:0}}>
         <div style={{fontSize:12,color:deal.done?C.textMid:C.text,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{deal.target}</div>
-        <div style={{display:"flex",alignItems:"center",gap:4,marginTop:3,flexWrap:"nowrap"}}>
-          <span style={{width:5,height:5,borderRadius:"50%",background:deal.stageColor,display:"inline-block",flexShrink:0}}/>
+        <div style={{display:"flex",alignItems:"center",gap:4,marginTop:2}}>
+          <span style={{width:5,height:5,borderRadius:"50%",background:deal.stageColor,flexShrink:0,display:"inline-block"}}/>
           <span style={{fontSize:9,color:deal.stageColor,fontWeight:600,whiteSpace:"nowrap"}}>{deal.stage}</span>
-          {deal.done && <span style={{fontSize:9,color:"#334155",whiteSpace:"nowrap",marginLeft:2}}>· {deal.closed} · {deal.days}d</span>}
-          {!deal.done && !deal.locked && deal.payment && <span style={{fontSize:9,color:"#4a6080",whiteSpace:"nowrap",marginLeft:4}}>{deal.payment}</span>}
+          {deal.done && <span style={{fontSize:9,color:"#334155",whiteSpace:"nowrap"}}>· {deal.closed}</span>}
+          {!deal.done && !deal.locked && deal.payment && <span style={{fontSize:9,color:"#4a6080",whiteSpace:"nowrap"}}>· {deal.payment}</span>}
         </div>
       </div>
 
-      {/* COLUMNA DERECHA */}
-      {deal.done ? (
-        // Completado
-        <div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"flex-end"}}>
+      {/* MÉTRICAS — derecha, una línea */}
+      {deal.done && (
+        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
           <div style={{textAlign:"right"}}>
             <div style={{fontSize:13,color:"#10b981",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,whiteSpace:"nowrap"}}>{deal.ret} <span style={{fontSize:10,color:"#334155"}}>{deal.spread}</span></div>
-            <div style={{fontSize:9,color:"#1e3a5f",whiteSpace:"nowrap",marginTop:1}}>sobre $10,000</div>
+            <div style={{fontSize:8,color:"#1e3a5f",whiteSpace:"nowrap",marginTop:1}}>en {deal.days}d · $10K</div>
           </div>
           <div style={{background:"#10b98114",border:"1px solid #10b98130",borderRadius:6,padding:"5px 9px",textAlign:"center",flexShrink:0}}>
-            <div style={{fontSize:12,color:"#10b981",fontWeight:800}}>{deal.annualized}</div>
+            <div style={{fontSize:12,color:"#10b981",fontWeight:800,whiteSpace:"nowrap"}}>{deal.annualized}</div>
             <div style={{fontSize:8,color:"#10b98170",letterSpacing:0.5}}>ANUAL</div>
           </div>
         </div>
-      ) : deal.locked ? (
-        // Bloqueado
-        <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-end"}}>
+      )}
+      {!deal.done && !deal.locked && (
+        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
           <div style={{textAlign:"right"}}>
-            <div style={{fontSize:10,color:"#1e3a5f"}}>spread · señal</div>
-            <div style={{fontSize:9,color:"#0d1e30",marginTop:2}}>Plan Premium</div>
-          </div>
-          <div style={{background:"#0a1628",border:"1px solid #1e293b",borderRadius:6,padding:"6px 10px",fontSize:14,color:"#1e3a5f"}}>🔒</div>
-        </div>
-      ) : (
-        // Activo desbloqueado — mostrar todo
-        <div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"flex-end"}}>
-          <div style={{textAlign:"right"}}>
-            <div style={{fontSize:15,color:"#10b981",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,whiteSpace:"nowrap"}}>{deal.spread}</div>
-            <div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end",marginTop:3}}>
-              <span style={{fontSize:9,color:"#4a6080"}}>prob. cierre</span>
-              <span style={{fontSize:9,color:"#3b82f6",fontWeight:700}}>{deal.prob}%</span>
-            </div>
+            <div style={{fontSize:16,color:"#10b981",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,whiteSpace:"nowrap"}}>{deal.spread}</div>
+            <div style={{fontSize:8,color:"#4a6080",whiteSpace:"nowrap",marginTop:1}}>prob. {deal.prob}%</div>
           </div>
           <div style={{background:"#3b82f614",border:"1px solid #3b82f630",borderRadius:6,padding:"5px 9px",textAlign:"center",flexShrink:0}}>
             <div style={{fontSize:11,color:"#3b82f6",fontWeight:800,whiteSpace:"nowrap"}}>{deal.signal}</div>
-            <div style={{fontSize:8,color:"#3b82f670",letterSpacing:0.3}}>SEÑAL</div>
+            <div style={{fontSize:8,color:"#3b82f670",letterSpacing:0.3,marginTop:1}}>SEÑAL</div>
           </div>
+        </div>
+      )}
+      {deal.locked && (
+        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+          <div style={{fontSize:9,color:"#1e3a5f",textAlign:"right",lineHeight:1.5}}>spread<br/>señal</div>
+          <div style={{background:"#0a1628",border:"1px solid #1e293b",borderRadius:6,padding:"6px 9px",fontSize:13,color:"#1e3a5f"}}>🔒</div>
         </div>
       )}
     </div>
@@ -1451,16 +1444,17 @@ function Landing({onEnter, onToggleLang, lang}) {
           .stats-grid{grid-template-columns:repeat(2,1fr)!important}
           .why-grid{grid-template-columns:1fr!important}
           .tiers-grid{grid-template-columns:1fr!important}
-          .preview-row{grid-template-columns:46px 1fr 48px 62px!important;gap:5px!important;padding:10px 12px!important}
-          .preview-header{display:none!important}
           .hero-section{padding:60px 20px 40px!important}
           .section-pad{padding:40px 20px!important}
-          .section-pad-sm{padding:20px 20px 40px!important}
+          .section-pad-sm{padding:20px 0 40px!important}
           .plans-section{padding:40px 20px!important}
           .footer-inner{flex-direction:column;gap:16px;text-align:center}
+          .preview-header{display:none!important}
+          .preview-row{grid-template-columns:44px 1fr!important;padding:12px 16px!important}
+          .preview-right{display:flex!important;flex-direction:column!important;align-items:flex-end!important;gap:4px!important;margin-top:6px!important;grid-column:1/-1!important}
+          .preview-company{grid-column:2!important}
         }
         @media(max-width:480px){
-          .preview-row{grid-template-columns:40px 1fr 44px 58px!important;gap:4px!important;padding:8px 10px!important}
           .tier-name{font-size:28px!important}
         }
       `}</style>
@@ -1526,10 +1520,9 @@ function Landing({onEnter, onToggleLang, lang}) {
               {t.liveTag}
             </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"72px 1fr 260px",alignItems:"center",padding:"9px 28px",borderBottom:`1px solid ${C.border}`,background:C.bg}}>
-            <div style={{fontSize:9,color:C.textDim,letterSpacing:0.8}}>TICKER</div>
-            <div style={{fontSize:9,color:C.textDim,letterSpacing:0.8}}>EMPRESA · STAGE</div>
-            <div style={{fontSize:9,color:C.textDim,letterSpacing:0.8,textAlign:"right"}}>RETORNO · SPREAD · TIR ANUAL</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 20px",borderBottom:`1px solid ${C.border}`,background:C.bg}}>
+            <span style={{fontSize:9,color:C.textDim,letterSpacing:0.8}}>EMPRESA · STAGE</span>
+            <span style={{fontSize:9,color:C.textDim,letterSpacing:0.8}}>RETORNO · SPREAD · TIR ANUAL</span>
           </div>
           {PREVIEW_DEALS.map((d,i)=><DealPreviewRow key={i} deal={d}/>)}
           <div style={{padding:"20px 16px",textAlign:"center"}}>
