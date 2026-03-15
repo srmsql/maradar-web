@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://maradar-web.vercel.app/sitemap.xml
