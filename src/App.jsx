@@ -1328,17 +1328,17 @@ function TickerBanner() {
 function DealPreviewRow({deal}) {
   const locked = deal.spread === "🔒";
   return (
-    <div style={{display:"grid",gridTemplateColumns:"72px 1fr 80px 80px",alignItems:"center",gap:12,padding:"12px 16px",borderBottom:`1px solid ${C.border}`,opacity:locked?0.5:1,transition:"background 0.15s",cursor:"default"}}
+    <div className="preview-row" style={{display:"grid",gridTemplateColumns:"72px 1fr 80px 80px",alignItems:"center",gap:8,padding:"10px 16px",borderBottom:`1px solid ${C.border}`,opacity:locked?0.5:1,transition:"background 0.15s",cursor:"default"}}
       onMouseEnter={e=>e.currentTarget.style.background=C.bgMid}
       onMouseLeave={e=>e.currentTarget.style.background="transparent"}
     >
-      <div style={{background:C.border,borderRadius:6,padding:"4px 8px",fontSize:11,color:C.textMid,fontFamily:"'JetBrains Mono',monospace",fontWeight:700,textAlign:"center"}}>{deal.ticker}</div>
-      <div>
-        <div style={{fontSize:13,color:C.text,fontWeight:600}}>{deal.target}</div>
-        <div style={{fontSize:11,color:C.textDim}}>by {deal.acquirer} · {deal.value}</div>
+      <div style={{background:C.border,borderRadius:6,padding:"4px 6px",fontSize:10,color:C.textMid,fontFamily:"'JetBrains Mono',monospace",fontWeight:700,textAlign:"center"}}>{deal.ticker}</div>
+      <div style={{minWidth:0}}>
+        <div style={{fontSize:12,color:C.text,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{deal.target}</div>
+        <div className="preview-sub" style={{fontSize:10,color:C.textDim,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>by {deal.acquirer} · {deal.value}</div>
       </div>
-      <div style={{fontSize:13,color:locked?C.textDim:"#10b981",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,textAlign:"right"}}>{deal.spread}</div>
-      <div style={{background:locked?C.border:deal.sc+"22",border:`1px solid ${locked?C.border:deal.sc+"55"}`,borderRadius:5,padding:"3px 8px",fontSize:10,color:locked?C.textDim:deal.sc,fontWeight:700,letterSpacing:1,textAlign:"center"}}>{deal.signal}</div>
+      <div style={{fontSize:12,color:locked?C.textDim:"#10b981",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,textAlign:"right"}}>{deal.spread}</div>
+      <div style={{background:locked?C.border:deal.sc+"22",border:`1px solid ${locked?C.border:deal.sc+"55"}`,borderRadius:5,padding:"3px 6px",fontSize:9,color:locked?C.textDim:deal.sc,fontWeight:700,letterSpacing:0.5,textAlign:"center"}}>{deal.signal}</div>
     </div>
   );
 }
@@ -1404,7 +1404,8 @@ function Landing({onEnter, onToggleLang, lang}) {
           .stats-grid{grid-template-columns:repeat(2,1fr)!important}
           .why-grid{grid-template-columns:1fr!important}
           .tiers-grid{grid-template-columns:1fr!important}
-          .preview-cols{grid-template-columns:60px 1fr 60px!important}
+          .preview-row{grid-template-columns:52px 1fr 52px 60px!important;gap:6px!important}
+          .preview-header{display:none!important}
           .hero-section{padding:60px 20px 40px!important}
           .section-pad{padding:40px 20px!important}
           .section-pad-sm{padding:20px 20px 40px!important}
@@ -1412,7 +1413,7 @@ function Landing({onEnter, onToggleLang, lang}) {
           .footer-inner{flex-direction:column;gap:16px;text-align:center}
         }
         @media(max-width:480px){
-          .preview-cols{grid-template-columns:50px 1fr 55px!important}
+          .preview-row{grid-template-columns:46px 1fr 48px 55px!important;gap:4px!important}
           .tier-name{font-size:28px!important}
         }
       `}</style>
@@ -1478,7 +1479,7 @@ function Landing({onEnter, onToggleLang, lang}) {
               {t.liveTag}
             </div>
           </div>
-          <div className="preview-cols" style={{display:"grid",gridTemplateColumns:"72px 1fr 80px 80px",gap:12,padding:"8px 16px",borderBottom:`1px solid ${C.border}`}}>
+          <div className="preview-row" style={{display:"grid",gridTemplateColumns:"72px 1fr 80px 80px",gap:8,padding:"8px 16px",borderBottom:`1px solid ${C.border}`}}>
             {["TICKER","EMPRESA","SPREAD","SEÑAL"].map((h,i)=><div key={i} style={{fontSize:9,color:C.textDim,letterSpacing:1}}>{h}</div>)}
           </div>
           {PREVIEW_DEALS.map((d,i)=><DealPreviewRow key={i} deal={d}/>)}
