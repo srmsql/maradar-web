@@ -1144,10 +1144,23 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
         ::-webkit-scrollbar { width:4px; }
         ::-webkit-scrollbar-track { background:transparent; }
         ::-webkit-scrollbar-thumb { background:${BDR2}; border-radius:99px; }
+        .dash-topbar{flex-wrap:wrap;height:auto!important;min-height:56px;padding:8px 16px!important}
+        .dash-topbar-metrics{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+        .dash-main{display:grid;grid-template-columns:380px 1fr}
+        .dash-left{border-right:1px solid ${BDR}}
+        @media(max-width:900px){
+          .dash-main{grid-template-columns:1fr!important;grid-template-rows:auto auto}
+          .dash-left{border-right:none!important;border-bottom:1px solid #0d1e30;max-height:50vh}
+          .dash-right{max-height:50vh}
+        }
+        @media(max-width:600px){
+          .dash-topbar-metrics .metric-item:nth-child(n+3){display:none}
+          .filter-bar{padding:8px 12px!important}
+        }
       `}</style>
 
       {/* TOPBAR */}
-      <div style={{background:BG2, borderBottom:`1px solid ${BDR}`, padding:"0 24px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0}}>
+      <div className="dash-topbar" style={{background:BG2, borderBottom:`1px solid ${BDR}`, padding:"0 24px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0}}>
         <div style={{display:"flex", alignItems:"center", gap:10}}>
           <div style={{width:28,height:28,borderRadius:6,background:`linear-gradient(135deg,${BLUE},${PURP})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:900,color:"#fff"}}>M</div>
           <div>
@@ -1199,7 +1212,7 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
       </div>
 
       {/* FILTER BAR */}
-      <div style={{background:BG2,borderBottom:`1px solid ${BDR}`,padding:"10px 24px",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",flexShrink:0}}>
+      <div className="filter-bar" style={{background:BG2,borderBottom:`1px solid ${BDR}`,padding:"10px 24px",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",flexShrink:0}}>
         {/* Search */}
         <div style={{position:"relative",flexShrink:0}}>
           <span style={{position:"absolute",left:9,top:"50%",transform:"translateY(-50%)",fontSize:12,color:"#334155",pointerEvents:"none"}}>🔍</span>
@@ -1227,9 +1240,9 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
       </div>
 
       {/* MAIN CONTENT */}
-      <div style={{display:"grid",gridTemplateColumns:"380px 1fr",flex:1,overflow:"hidden"}}>
+      <div className="dash-main" style={{display:"grid",gridTemplateColumns:"380px 1fr",flex:1,overflow:"hidden"}}>
         {/* LEFT PANEL */}
-        <div style={{borderRight:`1px solid ${BDR}`,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <div className="dash-left" style={{borderRight:`1px solid ${BDR}`,display:"flex",flexDirection:"column",overflow:"hidden"}}>
           {/* Tabs */}
           <div style={{display:"flex",borderBottom:`1px solid ${BDR}`,flexShrink:0}}>
             {[["deals",t.tabDeals],["glossary",t.tabGlossary]].map(([key,label]) => (
@@ -1268,7 +1281,7 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
         </div>
 
         {/* RIGHT PANEL */}
-        <div style={{overflowY:"auto",padding:"24px 28px"}}>
+        <div className="dash-right" style={{overflowY:"auto",padding:"24px 28px"}}>
           <DetailPanel deal={dealsWithLive.find(d=>d.id===selected?.id)||selected} isPremium={isPremium} onUpgrade={onUpgrade}/>
         </div>
       </div>
@@ -1378,15 +1391,39 @@ function Landing({onEnter, onToggleLang, lang}) {
         .tc:hover{transform:translateY(-4px)}
         .nl{color:#4a6080;font-size:12px;letter-spacing:1px;cursor:pointer;transition:color 0.15s;text-decoration:none}
         .nl:hover{color:#94a3b8}
+        /* ── RESPONSIVE ── */
+        .nav-links{display:flex;gap:20px;align-items:center}
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px}
+        .why-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+        .tiers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+        .preview-cols{display:grid;grid-template-columns:72px 1fr 80px 80px;gap:12px}
+        .hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+        @media(max-width:768px){
+          .nav-links{gap:12px}
+          .nav-links .nl{display:none}
+          .stats-grid{grid-template-columns:repeat(2,1fr)!important}
+          .why-grid{grid-template-columns:1fr!important}
+          .tiers-grid{grid-template-columns:1fr!important}
+          .preview-cols{grid-template-columns:60px 1fr 60px!important}
+          .hero-section{padding:60px 20px 40px!important}
+          .section-pad{padding:40px 20px!important}
+          .section-pad-sm{padding:20px 20px 40px!important}
+          .plans-section{padding:40px 20px!important}
+          .footer-inner{flex-direction:column;gap:16px;text-align:center}
+        }
+        @media(max-width:480px){
+          .preview-cols{grid-template-columns:50px 1fr 55px!important}
+          .tier-name{font-size:28px!important}
+        }
       `}</style>
 
       {/* NAV */}
-      <nav style={{position:"sticky",top:0,zIndex:100,background:scrolled?C.bgMid+"ee":"transparent",backdropFilter:scrolled?"blur(12px)":"none",borderBottom:scrolled?`1px solid ${C.border}`:"1px solid transparent",padding:"0 40px",height:60,display:"flex",alignItems:"center",justifyContent:"space-between",transition:"all 0.3s ease"}}>
+      <nav style={{position:"sticky",top:0,zIndex:100,background:scrolled?C.bgMid+"ee":"transparent",backdropFilter:scrolled?"blur(12px)":"none",borderBottom:scrolled?`1px solid ${C.border}`:"1px solid transparent",padding:"0 20px",height:60,display:"flex",alignItems:"center",justifyContent:"space-between",transition:"all 0.3s ease"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:28,height:28,borderRadius:6,background:`linear-gradient(135deg,${C.blue},${C.purple})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:900,color:"#fff"}}>M</div>
           <span style={{fontFamily:"'Inter',sans-serif",fontWeight:800,fontSize:15,letterSpacing:2}}>M&A RADAR</span>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:20}}>
+        <div className="nav-links" style={{display:"flex",alignItems:"center",gap:20}}>
           <a className="nl" onClick={()=>document.getElementById("como")?.scrollIntoView({behavior:"smooth"})}>{t.howItWorks}</a>
           <a className="nl" onClick={()=>document.getElementById("planes")?.scrollIntoView({behavior:"smooth"})}>{t.pricing}</a>
           <button className="btn" onClick={onEnter} style={{background:"transparent",border:`1px solid ${C.borderMd}`,borderRadius:7,padding:"7px 16px",color:C.textMid,fontSize:11,letterSpacing:1,fontFamily:"inherit"}}>{t.enter}</button>
@@ -1395,7 +1432,7 @@ function Landing({onEnter, onToggleLang, lang}) {
       </nav>
 
       {/* HERO */}
-      <section style={{padding:"100px 40px 80px",maxWidth:900,margin:"0 auto",textAlign:"center"}}>
+      <section className="hero-section" style={{padding:"100px 40px 80px",maxWidth:900,margin:"0 auto",textAlign:"center"}}>
         <div className="fu fu1" style={{display:"inline-flex",alignItems:"center",gap:8,background:C.green+"11",border:`1px solid ${C.green}33`,borderRadius:99,padding:"5px 14px",marginBottom:28}}>
           <span style={{width:6,height:6,borderRadius:"50%",background:C.green,animation:"pulseDot 2s ease infinite",display:"inline-block"}}/>
           <span style={{fontSize:10,color:C.green,letterSpacing:1.5,fontWeight:600}}>{t.liveBadge}</span>
@@ -1413,8 +1450,8 @@ function Landing({onEnter, onToggleLang, lang}) {
       <TickerBanner/>
 
       {/* STATS */}
-      <section style={{padding:"60px 40px",maxWidth:900,margin:"0 auto"}}>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:C.border,borderRadius:12,overflow:"hidden",border:`1px solid ${C.border}`}}>
+      <section className="section-pad" style={{padding:"60px 40px",maxWidth:900,margin:"0 auto"}}>
+        <div className="stats-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:C.border,borderRadius:12,overflow:"hidden",border:`1px solid ${C.border}`}}>
           {STATS.map((s,i) => (
             <div key={i} style={{background:C.bgMid,padding:"28px 20px",textAlign:"center"}}>
               <div style={{fontFamily:"'Inter',sans-serif",fontSize:36,fontWeight:900,color:s.color,letterSpacing:-1,marginBottom:6}}>{s.value}</div>
@@ -1425,7 +1462,7 @@ function Landing({onEnter, onToggleLang, lang}) {
       </section>
 
       {/* DASHBOARD PREVIEW */}
-      <section id="como" style={{padding:"20px 40px 80px",maxWidth:900,margin:"0 auto"}}>
+      <section id="como" className="section-pad-sm" style={{padding:"20px 40px 80px",maxWidth:900,margin:"0 auto"}}>
         <div style={{marginBottom:32,textAlign:"center"}}>
           <div style={{fontSize:10,color:C.textDim,letterSpacing:2,marginBottom:10}}>{t.dashSub}</div>
           <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:28,fontWeight:800}}>{t.dashTitle}</h2>
@@ -1441,7 +1478,7 @@ function Landing({onEnter, onToggleLang, lang}) {
               {t.liveTag}
             </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"72px 1fr 80px 80px",gap:12,padding:"8px 16px",borderBottom:`1px solid ${C.border}`}}>
+          <div className="preview-cols" style={{display:"grid",gridTemplateColumns:"72px 1fr 80px 80px",gap:12,padding:"8px 16px",borderBottom:`1px solid ${C.border}`}}>
             {["TICKER","EMPRESA","SPREAD","SEÑAL"].map((h,i)=><div key={i} style={{fontSize:9,color:C.textDim,letterSpacing:1}}>{h}</div>)}
           </div>
           {PREVIEW_DEALS.map((d,i)=><DealPreviewRow key={i} deal={d}/>)}
@@ -1452,13 +1489,13 @@ function Landing({onEnter, onToggleLang, lang}) {
       </section>
 
       {/* WHY */}
-      <section style={{padding:"60px 40px",background:C.bgMid,borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`}}>
+      <section className="section-pad" style={{padding:"60px 40px",background:C.bgMid,borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`}}>
         <div style={{maxWidth:900,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:48}}>
             <div style={{fontSize:10,color:C.textDim,letterSpacing:2,marginBottom:10}}>{t.whySub}</div>
             <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:28,fontWeight:800}}>{t.whyTitle}</h2>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:20}}>
+          <div className="why-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:20}}>
             {WHY.map((w,i) => (
               <div key={i} style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:24}}>
                 <div style={{fontSize:28,marginBottom:12}}>{w.icon}</div>
@@ -1471,20 +1508,20 @@ function Landing({onEnter, onToggleLang, lang}) {
       </section>
 
       {/* PRICING */}
-      <section id="planes" style={{padding:"80px 40px",maxWidth:960,margin:"0 auto"}}>
+      <section id="planes" className="plans-section" style={{padding:"80px 40px",maxWidth:960,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:48}}>
           <div style={{fontSize:10,color:C.textDim,letterSpacing:2,marginBottom:10}}>{t.pricingSub}</div>
           <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:32,fontWeight:800,marginBottom:12}}>{t.pricingTitle}</h2>
           <p style={{fontSize:13,color:C.textMid}}>{t.pricingNote}</p>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
+        <div className="tiers-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
           {TIERS.map((tier,i) => (
             <div key={i} className="tc" style={{background:tier.highlight?`linear-gradient(160deg,#0a1628,#0d1e30)`:C.bgMid,border:`1px solid ${tier.highlight?tier.color+"66":C.border}`,borderRadius:14,padding:"28px 24px",position:"relative",overflow:"hidden",boxShadow:tier.highlight?`0 0 60px ${tier.color}22`:"none"}}>
               {tier.highlight && <div style={{position:"absolute",top:14,right:14,background:`linear-gradient(135deg,${C.blue},${C.purple})`,borderRadius:99,padding:"3px 10px",fontSize:9,color:"#fff",fontWeight:700,letterSpacing:1}}>{t.popular}</div>}
               <div style={{marginBottom:20}}>
                 <div style={{fontSize:10,color:tier.color,letterSpacing:2,marginBottom:8}}>{tier.name.toUpperCase()}</div>
                 <div style={{display:"flex",alignItems:"baseline",gap:4}}>
-                  <span style={{fontFamily:"'Inter',sans-serif",fontSize:36,fontWeight:900,color:C.text}}>{tier.price}</span>
+                  <span className="tier-name" style={{fontFamily:"'Inter',sans-serif",fontSize:36,fontWeight:900,color:C.text}}>{tier.price}</span>
                   <span style={{fontSize:12,color:C.textDim}}>{tier.period}</span>
                 </div>
               </div>
@@ -1507,7 +1544,7 @@ function Landing({onEnter, onToggleLang, lang}) {
       </section>
 
       {/* FOOTER */}
-      <footer style={{borderTop:`1px solid ${C.border}`,padding:"32px 40px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
+      <footer style={{borderTop:`1px solid ${C.border}`,padding:"32px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{width:22,height:22,borderRadius:5,background:`linear-gradient(135deg,${C.blue},${C.purple})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900,color:"#fff"}}>M</div>
           <span style={{fontFamily:"'Inter',sans-serif",fontWeight:800,fontSize:12,letterSpacing:2,color:C.textDim}}>M&A RADAR</span>
