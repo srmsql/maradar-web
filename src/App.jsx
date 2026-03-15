@@ -1514,7 +1514,8 @@ function Landing({onEnter, onToggleLang, lang}) {
           .tiers-grid{grid-template-columns:1fr!important}
           .hero-section{padding:60px 20px 40px!important}
           .section-pad{padding:40px 20px!important}
-          .section-pad-sm{padding:20px 0 40px!important}
+          .preview-section{max-width:960px!important;margin:0 auto!important}
+          .section-pad-sm{padding:20px 20px 40px!important}
           .plans-section{padding:40px 20px!important}
           .footer-inner{flex-direction:column;gap:16px;text-align:center}
           .preview-header{display:none!important}
@@ -1572,7 +1573,7 @@ function Landing({onEnter, onToggleLang, lang}) {
       </section>
 
       {/* DASHBOARD PREVIEW */}
-      <section id="como" className="section-pad-sm" style={{padding:"20px 40px 80px",maxWidth:960,margin:"0 auto"}}>
+      <section id="como" className="section-pad-sm preview-section" style={{padding:"20px 40px 80px",maxWidth:960,margin:"0 auto"}}>
         <div style={{marginBottom:32,textAlign:"center",maxWidth:960,margin:"0 auto 32px"}}>
           <div style={{fontSize:10,color:C.textDim,letterSpacing:2,marginBottom:10}}>{t.dashSub}</div>
           <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:28,fontWeight:800}}>{t.dashTitle}</h2>
