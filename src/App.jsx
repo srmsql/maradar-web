@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect, createContext, useContext } from "react";
+import { supabase } from "./supabase.js";
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
 const T = {
@@ -1392,17 +1393,17 @@ function TickerBanner() {
 
 function DealPreviewRow({deal}) {
   return (
-    <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 20px",borderBottom:`1px solid ${C.border}`,opacity:deal.locked?0.5:1,transition:"background 0.15s"}}
+    <div style={{display:"flex",alignItems:"center",gap:12,padding:"13px 20px",borderBottom:`1px solid ${C.border}`,opacity:deal.locked?0.5:1,transition:"background 0.15s"}}
       onMouseEnter={e=>e.currentTarget.style.background=C.bgMid}
       onMouseLeave={e=>e.currentTarget.style.background="transparent"}
     >
       {/* TICKER */}
-      <div style={{flexShrink:0,background:C.border,borderRadius:6,padding:"4px 7px",fontSize:10,color:C.textMid,fontFamily:"'JetBrains Mono',monospace",fontWeight:700,minWidth:42,textAlign:"center"}}>{deal.ticker}</div>
+      <div style={{flexShrink:0,background:C.border,borderRadius:6,padding:"4px 7px",fontSize:10,color:C.textMid,fontFamily:"'JetBrains Mono',monospace",fontWeight:700,minWidth:44,textAlign:"center"}}>{deal.ticker}</div>
 
       {/* EMPRESA + STAGE */}
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontSize:12,color:deal.done?C.textMid:C.text,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{deal.target}</div>
-        <div style={{display:"flex",alignItems:"center",gap:4,marginTop:2}}>
+        <div style={{display:"flex",alignItems:"center",gap:4,marginTop:2,flexWrap:"nowrap"}}>
           <span style={{width:5,height:5,borderRadius:"50%",background:deal.stageColor,flexShrink:0,display:"inline-block"}}/>
           <span style={{fontSize:9,color:deal.stageColor,fontWeight:600,whiteSpace:"nowrap"}}>{deal.stage}</span>
           {deal.done && <span style={{fontSize:9,color:"#334155",whiteSpace:"nowrap"}}>· {deal.closed}</span>}
@@ -1410,26 +1411,28 @@ function DealPreviewRow({deal}) {
         </div>
       </div>
 
-      {/* MÉTRICAS — derecha, una línea */}
+      {/* MÉTRICAS DERECHA */}
       {deal.done && (
-        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
           <div style={{textAlign:"right"}}>
-            <div style={{fontSize:13,color:"#10b981",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,whiteSpace:"nowrap"}}>{deal.ret} <span style={{fontSize:10,color:"#334155"}}>{deal.spread}</span></div>
-            <div style={{fontSize:8,color:"#1e3a5f",whiteSpace:"nowrap",marginTop:1}}>en {deal.days}d · $10K</div>
+            <div style={{fontSize:13,color:"#10b981",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,whiteSpace:"nowrap"}}>
+              {deal.ret} <span style={{fontSize:10,color:"#334155"}}>{deal.spread}</span>
+            </div>
+            <div style={{fontSize:9,color:"#1e3a5f",whiteSpace:"nowrap",marginTop:2}}>en {deal.days}d · $10K</div>
           </div>
-          <div style={{background:"#10b98114",border:"1px solid #10b98130",borderRadius:6,padding:"5px 9px",textAlign:"center",flexShrink:0}}>
-            <div style={{fontSize:12,color:"#10b981",fontWeight:800,whiteSpace:"nowrap"}}>{deal.annualized}</div>
+          <div style={{background:"#10b98114",border:"1px solid #10b98130",borderRadius:6,padding:"5px 9px",textAlign:"center",flexShrink:0,minWidth:52}}>
+            <div style={{fontSize:12,color:"#10b981",fontWeight:800}}>{deal.annualized}</div>
             <div style={{fontSize:8,color:"#10b98170",letterSpacing:0.5}}>ANUAL</div>
           </div>
         </div>
       )}
       {!deal.done && !deal.locked && (
-        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
           <div style={{textAlign:"right"}}>
             <div style={{fontSize:16,color:"#10b981",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,whiteSpace:"nowrap"}}>{deal.spread}</div>
-            <div style={{fontSize:8,color:"#4a6080",whiteSpace:"nowrap",marginTop:1}}>prob. {deal.prob}%</div>
+            <div style={{fontSize:9,color:"#4a6080",whiteSpace:"nowrap",marginTop:2}}>prob. {deal.prob}%</div>
           </div>
-          <div style={{background:"#3b82f614",border:"1px solid #3b82f630",borderRadius:6,padding:"5px 9px",textAlign:"center",flexShrink:0}}>
+          <div style={{background:"#3b82f614",border:"1px solid #3b82f630",borderRadius:6,padding:"5px 9px",textAlign:"center",flexShrink:0,minWidth:64}}>
             <div style={{fontSize:11,color:"#3b82f6",fontWeight:800,whiteSpace:"nowrap"}}>{deal.signal}</div>
             <div style={{fontSize:8,color:"#3b82f670",letterSpacing:0.3,marginTop:1}}>SEÑAL</div>
           </div>
@@ -1437,7 +1440,10 @@ function DealPreviewRow({deal}) {
       )}
       {deal.locked && (
         <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
-          <div style={{fontSize:9,color:"#1e3a5f",textAlign:"right",lineHeight:1.5}}>spread<br/>señal</div>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:10,color:"#1e3a5f"}}>spread · señal</div>
+            <div style={{fontSize:9,color:"#0d1e30",marginTop:2}}>Premium</div>
+          </div>
           <div style={{background:"#0a1628",border:"1px solid #1e293b",borderRadius:6,padding:"6px 9px",fontSize:13,color:"#1e3a5f"}}>🔒</div>
         </div>
       )}
@@ -1566,12 +1572,12 @@ function Landing({onEnter, onToggleLang, lang}) {
       </section>
 
       {/* DASHBOARD PREVIEW */}
-      <section id="como" className="section-pad-sm" style={{padding:"20px 0 80px",maxWidth:"100%",margin:"0 auto"}}>
+      <section id="como" className="section-pad-sm" style={{padding:"20px 40px 80px",maxWidth:960,margin:"0 auto"}}>
         <div style={{marginBottom:32,textAlign:"center",maxWidth:960,margin:"0 auto 32px"}}>
           <div style={{fontSize:10,color:C.textDim,letterSpacing:2,marginBottom:10}}>{t.dashSub}</div>
           <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:28,fontWeight:800}}>{t.dashTitle}</h2>
         </div>
-        <div style={{background:C.bgMid,border:`1px solid ${C.border}`,borderRadius:0,overflow:"hidden",boxShadow:"0 24px 80px rgba(0,0,0,0.6)",width:"100%"}}>
+        <div style={{background:C.bgMid,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",boxShadow:"0 24px 80px rgba(0,0,0,0.6)"}}>
           <div style={{background:C.bg,borderBottom:`1px solid ${C.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",gap:6}}>
               {["#ef4444","#f59e0b","#10b981"].map((c,i)=><div key={i} style={{width:10,height:10,borderRadius:"50%",background:c}}/>)}
@@ -1664,8 +1670,13 @@ function Landing({onEnter, onToggleLang, lang}) {
 // ─── LOGIN MODAL ──────────────────────────────────────────────────────────────
 function LoginModal({onClose, onLogin, lang}) {
   const t = useT();
-  const [email, setEmail] = useState("");
-  const [tier,  setTier]  = useState("free");
+  const [email,    setEmail]    = useState("");
+  const [password, setPassword] = useState("");
+  const [tier,     setTier]     = useState("free");
+  const [mode,     setMode]     = useState("login"); // login | register
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState("");
+  const [success,  setSuccess]  = useState("");
 
   const TIERS_CFG = [
     {key:"free",     label:t.tierFree, price:"$0/mo",    color:"#64748b", desc:t.loginFreeDesc},
@@ -1673,45 +1684,119 @@ function LoginModal({onClose, onLogin, lang}) {
     {key:"pro",      label:t.tierPro,  price:"$3.99/mo", color:"#8b5cf6", desc:t.loginProDesc},
   ];
 
-  function handleLogin() {
-    if (!email.includes("@")) return;
-    onLogin({email, tier});
-    onClose();
+  async function handleSubmit() {
+    if (!email.includes("@") || password.length < 6) {
+      setError(lang==="es" ? "Email válido y contraseña de al menos 6 caracteres." : "Valid email and password of at least 6 characters.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+
+    if (mode === "register") {
+      const { data, error: err } = await supabase.auth.signUp({ email, password });
+      if (err) { setError(err.message); setLoading(false); return; }
+      setSuccess(lang==="es"
+        ? "¡Cuenta creada! Revisa tu email para confirmar."
+        : "Account created! Check your email to confirm.");
+      setLoading(false);
+    } else {
+      const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
+      if (err) { setError(err.message); setLoading(false); return; }
+      // Get profile to get tier
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("tier")
+        .eq("id", data.user.id)
+        .single();
+      onLogin({ email: data.user.email, tier: profile?.tier || "free", id: data.user.id });
+      onClose();
+    }
   }
 
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,backdropFilter:"blur(6px)"}} onClick={onClose}>
-      <div style={{background:"#050d18",border:"1px solid #1e3a5f",borderRadius:16,padding:"32px 28px",width:420,boxShadow:"0 24px 80px rgba(0,0,0,0.8)"}} onClick={e=>e.stopPropagation()}>
+      <div style={{background:"#050d18",border:"1px solid #1e3a5f",borderRadius:16,padding:"32px 28px",width:"min(460px,92vw)",boxShadow:"0 24px 80px rgba(0,0,0,0.8)"}} onClick={e=>e.stopPropagation()}>
+
+        {/* Header */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
           <div>
-            <div style={{fontFamily:"'Inter',sans-serif",fontWeight:800,fontSize:18,color:"#f0f4f8"}}>{t.loginTitle}</div>
-            <div style={{fontSize:11,color:"#4a6080",marginTop:3}}>{t.loginSub}</div>
-          </div>
-          <button onClick={onClose} style={{background:"none",border:"none",color:"#4a6080",cursor:"pointer",fontSize:18}}>✕</button>
-        </div>
-        <div style={{marginBottom:20,display:"flex",flexDirection:"column",gap:8}}>
-          {TIERS_CFG.map(tc => (
-            <div key={tc.key} onClick={()=>setTier(tc.key)} style={{border:`1px solid ${tier===tc.key?tc.color+"88":"#1e3a5f"}`,borderRadius:10,padding:"12px 16px",cursor:"pointer",background:tier===tc.key?tc.color+"11":"transparent",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"all 0.15s"}}>
-              <div>
-                <div style={{fontSize:13,fontWeight:700,color:tier===tc.key?tc.color:"#94a3b8"}}>{tc.label}</div>
-                <div style={{fontSize:11,color:"#4a6080",marginTop:2}}>{tc.desc}</div>
-              </div>
-              <div style={{fontSize:13,fontWeight:700,color:tier===tc.key?tc.color:"#334155",fontFamily:"monospace"}}>{tc.price}</div>
+            <div style={{fontFamily:"'Inter',sans-serif",fontWeight:800,fontSize:20,color:"#f0f4f8"}}>
+              {mode==="login"
+                ? (lang==="es" ? "Acceder a M&A RADAR" : "Log in to M&A RADAR")
+                : (lang==="es" ? "Crear cuenta" : "Create account")}
             </div>
-          ))}
+            <div style={{fontSize:13,color:"#4a6080",marginTop:4}}>
+              {mode==="login"
+                ? (lang==="es" ? "Introduce tus datos para acceder" : "Enter your details to log in")
+                : (lang==="es" ? "Elige tu plan y empieza ahora" : "Choose your plan and start now")}
+            </div>
+          </div>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"#4a6080",cursor:"pointer",fontSize:20,padding:4}}>✕</button>
         </div>
-        <div style={{marginBottom:16}}>
-          <div style={{fontSize:10,color:"#4a6080",letterSpacing:1,marginBottom:6}}>{t.emailLabel}</div>
-          <input type="email" placeholder={t.emailPh} value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleLogin()}
-            style={{width:"100%",background:"#030a14",border:"1px solid #1e3a5f",borderRadius:8,padding:"10px 14px",color:"#f0f4f8",fontSize:13,fontFamily:"'Inter',sans-serif",outline:"none"}}
-            onFocus={e=>e.target.style.borderColor="#3b82f6"} onBlur={e=>e.target.style.borderColor="#1e3a5f"}
+
+        {/* Plan selector — solo en registro */}
+        {mode === "register" && (
+          <div style={{marginBottom:20,display:"flex",flexDirection:"column",gap:8}}>
+            {TIERS_CFG.map(tc => (
+              <div key={tc.key} onClick={()=>setTier(tc.key)}
+                style={{border:`1px solid ${tier===tc.key?tc.color+"88":"#1e3a5f"}`,borderRadius:10,padding:"13px 16px",cursor:"pointer",background:tier===tc.key?tc.color+"11":"transparent",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"all 0.15s"}}>
+                <div>
+                  <div style={{fontSize:14,fontWeight:700,color:tier===tc.key?tc.color:"#94a3b8"}}>{tc.label}</div>
+                  <div style={{fontSize:12,color:"#4a6080",marginTop:3}}>{tc.desc}</div>
+                </div>
+                <div style={{fontSize:14,fontWeight:700,color:tier===tc.key?tc.color:"#334155",fontFamily:"monospace"}}>{tc.price}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Email */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:11,color:"#4a6080",letterSpacing:1,marginBottom:7,textTransform:"uppercase"}}>EMAIL</div>
+          <input type="email" placeholder={t.emailPh} value={email}
+            onChange={e=>setEmail(e.target.value)}
+            style={{width:"100%",background:"#030a14",border:"1px solid #1e3a5f",borderRadius:8,padding:"11px 14px",color:"#f0f4f8",fontSize:14,fontFamily:"'Inter',sans-serif",outline:"none"}}
+            onFocus={e=>e.target.style.borderColor="#3b82f6"}
+            onBlur={e=>e.target.style.borderColor="#1e3a5f"}
           />
         </div>
-        <button onClick={handleLogin} disabled={!email.includes("@")} style={{width:"100%",borderRadius:9,padding:13,background:email.includes("@")?"linear-gradient(135deg,#3b82f6,#8b5cf6)":"#0d1e30",border:"none",color:email.includes("@")?"#fff":"#334155",fontSize:13,fontWeight:700,letterSpacing:1,fontFamily:"'Inter',sans-serif",cursor:email.includes("@")?"pointer":"default",transition:"all 0.2s"}}>
-          {tier==="free" ? t.loginFreeCta : t.loginPaidCta(tier)}
+
+        {/* Password */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:11,color:"#4a6080",letterSpacing:1,marginBottom:7,textTransform:"uppercase"}}>{lang==="es"?"CONTRASEÑA":"PASSWORD"}</div>
+          <input type="password" placeholder={lang==="es"?"Mínimo 6 caracteres":"At least 6 characters"} value={password}
+            onChange={e=>setPassword(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
+            style={{width:"100%",background:"#030a14",border:"1px solid #1e3a5f",borderRadius:8,padding:"11px 14px",color:"#f0f4f8",fontSize:14,fontFamily:"'Inter',sans-serif",outline:"none"}}
+            onFocus={e=>e.target.style.borderColor="#3b82f6"}
+            onBlur={e=>e.target.style.borderColor="#1e3a5f"}
+          />
+        </div>
+
+        {/* Error / Success */}
+        {error   && <div style={{background:"#ef444418",border:"1px solid #ef444433",borderRadius:8,padding:"10px 14px",fontSize:13,color:"#ef4444",marginBottom:14}}>{error}</div>}
+        {success && <div style={{background:"#10b98118",border:"1px solid #10b98133",borderRadius:8,padding:"10px 14px",fontSize:13,color:"#10b981",marginBottom:14}}>{success}</div>}
+
+        {/* Submit */}
+        <button onClick={handleSubmit} disabled={loading||!!success}
+          style={{width:"100%",borderRadius:9,padding:14,background:loading||success?"#0d1e30":"linear-gradient(135deg,#3b82f6,#8b5cf6)",border:"none",color:loading||success?"#334155":"#fff",fontSize:14,fontWeight:700,letterSpacing:1,fontFamily:"'Inter',sans-serif",cursor:loading||success?"default":"pointer",transition:"all 0.2s"}}>
+          {loading ? "..." : mode==="login"
+            ? (lang==="es" ? "ACCEDER →" : "LOG IN →")
+            : (lang==="es" ? "CREAR CUENTA →" : "CREATE ACCOUNT →")}
         </button>
-        <div style={{fontSize:10,color:"#1e3a5f",textAlign:"center",marginTop:12,lineHeight:1.6}}>
-          {tier==="free" ? t.loginFreeNote : t.loginPaidNote}
+
+        {/* Toggle login/register */}
+        <div style={{textAlign:"center",marginTop:16,fontSize:13,color:"#4a6080"}}>
+          {mode==="login"
+            ? <>{lang==="es"?"¿No tienes cuenta? ":"No account? "}<span onClick={()=>{setMode("register");setError("");}} style={{color:"#3b82f6",cursor:"pointer",fontWeight:600}}>{lang==="es"?"Crear cuenta":"Sign up"}</span></>
+            : <>{lang==="es"?"¿Ya tienes cuenta? ":"Already have an account? "}<span onClick={()=>{setMode("login");setError("");}} style={{color:"#3b82f6",cursor:"pointer",fontWeight:600}}>{lang==="es"?"Acceder":"Log in"}</span></>
+          }
+        </div>
+
+        <div style={{fontSize:11,color:"#1e3a5f",textAlign:"center",marginTop:12,lineHeight:1.6}}>
+          {lang==="es"
+            ? "Sin tarjeta de crédito para el plan Free. Cancela cuando quieras."
+            : "No credit card for Free plan. Cancel anytime."}
         </div>
       </div>
     </div>
@@ -1721,25 +1806,69 @@ function LoginModal({onClose, onLogin, lang}) {
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [view,      setView]      = useState("landing");
-  const [user,      setUser]      = useState(() => { try { return JSON.parse(localStorage.getItem("maradar_user")) || null; } catch { return null; } });
+  const [user,      setUser]      = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [lang,      setLang]      = useState(() => localStorage.getItem("maradar_lang") || "es");
+  const [authReady, setAuthReady] = useState(false);
+
+  // Listen to Supabase auth state changes
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("tier")
+          .eq("id", session.user.id)
+          .single();
+        setUser({ email: session.user.email, tier: profile?.tier || "free", id: session.user.id });
+        setView("dashboard");
+      }
+      setAuthReady(true);
+    });
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("tier")
+          .eq("id", session.user.id)
+          .single();
+        setUser({ email: session.user.email, tier: profile?.tier || "free", id: session.user.id });
+        setView("dashboard");
+      }
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        setView("landing");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   function toggleLang() {
     const next = lang === "es" ? "en" : "es";
     setLang(next);
     localStorage.setItem("maradar_lang", next);
   }
+
   function handleLogin(userData) {
     setUser(userData);
-    localStorage.setItem("maradar_user", JSON.stringify(userData));
     setView("dashboard");
   }
-  function handleLogout() {
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem("maradar_user");
     setView("landing");
   }
+
+  if (!authReady) return (
+    <div style={{background:"#030a14",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{color:"#1e3a5f",fontSize:12,letterSpacing:2,fontFamily:"monospace"}}>M&A RADAR...</div>
+    </div>
+  );
 
   return (
     <LangCtx.Provider value={lang}>
