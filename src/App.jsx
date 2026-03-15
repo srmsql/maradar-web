@@ -59,7 +59,7 @@ const T = {
     oCash:"💵 Cash", oStock:"📈 Stock", oMixed:"⚖️ Mixto",
     oBuy:"Comprar", oAcc:"Acumular", oCaut:"Cauto", oAvoid:"Evitar",
     oProb:"Probabilidad", oSpread:"Spread", oPremium:"Prima", oValue:"Valor deal",
-    mValor:"Valor", mSpread:"Spread", mPrima:"Prima", mPago:"Pago", mProb:"Prob. cierre",
+    mValor:"Valor", mSpread:"Spread", mAnual:"TIR Anual", mPrima:"Prima", mPago:"Pago", mProb:"Prob. cierre",
     mCash:"💵 Cash", mStock:"📈 Stock", mMixed:"⚖️ Mixto",
     acquiredBy:"Adquirida por", selectDeal:"SELECCIONA UN DEAL",
     lockedTitle:"Análisis bloqueado — Plan Premium",
@@ -133,7 +133,7 @@ const T = {
     oCash:"💵 Cash", oStock:"📈 Stock", oMixed:"⚖️ Mixed",
     oBuy:"Buy", oAcc:"Accumulate", oCaut:"Caution", oAvoid:"Avoid",
     oProb:"Probability", oSpread:"Spread", oPremium:"Premium", oValue:"Deal value",
-    mValor:"Value", mSpread:"Spread", mPrima:"Premium", mPago:"Payment", mProb:"Close prob.",
+    mValor:"Value", mSpread:"Spread", mAnual:"Ann. Return", mPrima:"Premium", mPago:"Payment", mProb:"Close prob.",
     mCash:"💵 Cash", mStock:"📈 Stock", mMixed:"⚖️ Mixed",
     acquiredBy:"Acquired by", selectDeal:"SELECT A DEAL",
     lockedTitle:"Analysis locked — Premium Plan",
@@ -613,14 +613,23 @@ const STAGE_CFG = {
 
 const GLOSSARY = [
   {term:"SPREAD", color:"#10b981",
-   def:"Diferencia entre el precio actual de la acción y el precio de oferta. Si cotiza a $96 y la oferta es $100, el spread es +4%. Es tu beneficio potencial si el deal cierra. Spread alto = mayor riesgo percibido de ruptura.",
+   def:"Diferencia entre el precio actual de la acción y el precio de oferta. Si cotiza a $96 y la oferta es $100, el spread es +4%. Es tu beneficio potencial si el deal cierra. Spread alto = mayor riesgo percibido de ruptura. Un ETF de merger arbitrage diluye este spread entre 30-40 deals — tú puedes concentrarte en los mejores.",
    ex:"Cotización $96 → Oferta $100 → Spread +4%"},
+  {term:"TIR ANUAL", color:"#f59e0b",
+   def:"El spread bruto no dice todo — lo que importa es cuánto ganas por unidad de tiempo. Un +3% en 45 días equivale a ~27% anualizado. Mucho más relevante que el % nominal para comparar deals entre sí o contra el S&P 500 (~10% anual con alta volatilidad). El merger arbitrage bien ejecutado puede superar ese retorno en operaciones de 30-90 días con correlación de mercado casi nula.",
+   ex:"+3.1% en 47 días → TIR anual ~25% · +5.4% en 62 días → TIR anual ~37%"},
   {term:"PRIMA",  color:"#8b5cf6",
-   def:"% que el adquirente paga por encima del precio previo al anuncio. Indica cuánto valora el comprador la empresa respecto al mercado. Primas típicas: 20–40%. Prima alta puede indicar guerra de ofertas o activo muy estratégico.",
+   def:"% que el adquirente paga por encima del precio previo al anuncio. Indica cuánto valora el comprador la empresa respecto al mercado. Primas típicas: 20–40%. Prima alta puede indicar guerra de ofertas o activo muy estratégico. A diferencia del spread, la prima no cambia con el mercado.",
    ex:"Pre-anuncio $80 → Oferta $100 → Prima +25%"},
   {term:"PROB. CIERRE", color:"#f59e0b",
    def:"Estimación de la probabilidad de que el deal se complete con éxito. Se calcula valorando el estado regulatorio, la oposición política, el historial de deals similares, el tipo de pago y el tiempo restante. +85% = prácticamente cerrado. 50–85% = riesgo moderado. <50% = alta incertidumbre o deal en peligro.",
    ex:"+85% aprobaciones obtenidas → bajo riesgo · <50% veto político → evitar"},
+  {term:"BREAKUP FEE", color:"#ef4444",
+   def:"Penalización que paga el adquirente al objetivo si cancela el deal. Suele ser el 2-4% del valor total. Actúa como red de seguridad parcial para el arbitrajista: si el deal cae, el objetivo recibe la fee y su cotización no cae a cero. Conocer la breakup fee es clave para evaluar el riesgo real de una posición.",
+   ex:"Adobe canceló Figma → pagó $1B breakup fee → Figma cotizó por encima del precio pre-deal"},
+  {term:"CORRELACIÓN DE MERCADO", color:"#3b82f6",
+   def:"El merger arbitrage tiene correlación casi nula con el S&P 500. Cuando el mercado cae un 20%, una cartera de arbitrage apenas se mueve porque el retorno depende de si un deal cierra, no de si el mercado sube o baja. Esto lo convierte en un complemento perfecto para una cartera con exposición a índices.",
+   ex:"Crash COVID mar 2020: S&P -34% · HFRI Merger Arb Index -4.2%"},
 ];
 
 const PAYMENT_GUIDE = [
@@ -661,7 +670,7 @@ const SIGNALS_GUIDE = [
    def:"El deal tiene alta probabilidad de cierre (>85%), el spread es atractivo y los riesgos regulatorios o políticos son bajos o ya han sido superados. Es el momento óptimo para entrar en la acción del objetivo y capturar el spread hasta el cierre. Cuanto más cerca del cierre, menor el riesgo.",
    ex:"Aprobaciones obtenidas, spread +2–5%, cierre en semanas → entrada óptima"},
   {term:"ACUMULAR",  color:"#3b82f6",
-   def:"La oportunidad es atractiva pero existe riesgo moderado controlable: revisión regulatoria en curso sin señales de bloqueo, deal mixto con algo de volatilidad en el precio de canje, o timeline algo largo. Tiene sentido construir posición gradualmente y monitorizar hitos regulatorios.",
+   def:"La oportunidad es atractiva pero existe riesgo moderado controlable: revisión regulatoria en curso sin señales de bloqueo, deal mixto con algo de volatilidad en el precio de canje, o timeline algo largo. Tiene sentido construir posición gradualmente y monitorizar hitos regulatorios. Un ETF de merger arbitrage nunca te diría esto — entra en todos los deals por igual.",
    ex:"Spread +15-20%, accionistas aprobaron, FTC en revisión sin señales negativas"},
   {term:"CAUTO",     color:"#f59e0b",
    def:"Existen factores de riesgo significativos que hacen la entrada arriesgada en este momento: reguladores activos con posiciones negativas, oposición política fuerte, STB/CFIUS complicados, o timeline muy largo (2+ años). El spread puede parecer atractivo pero no compensa el riesgo de ruptura.",
@@ -816,17 +825,26 @@ function DealCard({deal, onClick, selected, isPremium, onUpgrade, watched, onTog
       </div>
 
       <div style={{display:"flex", gap:16, marginBottom:10, flexWrap:"wrap"}}>
-        {[
-          [t.mValor,  deal.dealValue,                                                              TXT2],
-          [t.mSpread, isPremium ? (deal.spreadNum > 0 ? `+${deal.spreadNum}%` : "—") : "🔒",     isPremium && deal.spreadNum > 0 ? GREEN : BDR],
-          [t.mPrima,  deal.premium > 0 ? `+${deal.premium}%` : "—",                               PURP],
-          [t.mPago,   deal.paymentType==="cash" ? t.mCash : deal.paymentType==="stock" ? t.mStock : t.mMixed, TXT2],
-        ].map(([l,v,c],i) => (
-          <div key={i}>
-            <div style={{fontSize:9, color:"#334155", letterSpacing:0.8, marginBottom:2, textTransform:"uppercase"}}>{l}</div>
-            <div style={{fontSize:13, color:c, fontFamily:"'JetBrains Mono',monospace", fontWeight:600}}>{v}</div>
-          </div>
-        ))}
+        {(() => {
+          const spreadNum = deal.spreadNum || 0;
+          const daysLeft = deal.daysToClose || 60;
+          const annualized = isPremium && spreadNum > 0
+            ? `~${Math.round((Math.pow(1 + spreadNum/100, 365/daysLeft) - 1) * 100)}%`
+            : "🔒";
+          const annColor = isPremium && spreadNum > 0 ? AMBER : BDR;
+          return [
+            [t.mValor,  deal.dealValue,                                                                    TXT2],
+            [t.mSpread, isPremium ? (spreadNum > 0 ? `+${spreadNum}%` : "—") : "🔒",                      isPremium && spreadNum > 0 ? GREEN : BDR],
+            [t.mAnual,  annualized,                                                                        annColor],
+            [t.mPrima,  deal.premium > 0 ? `+${deal.premium}%` : "—",                                     PURP],
+            [t.mPago,   deal.paymentType==="cash" ? t.mCash : deal.paymentType==="stock" ? t.mStock : t.mMixed, TXT2],
+          ].map(([l,v,col],i) => (
+            <div key={i}>
+              <div style={{fontSize:9, color:"#334155", letterSpacing:0.8, marginBottom:2, textTransform:"uppercase"}}>{l}</div>
+              <div style={{fontSize:13, color:col, fontFamily:"'JetBrains Mono',monospace", fontWeight:600}}>{v}</div>
+            </div>
+          ));
+        })()}
       </div>
 
       <div style={{marginBottom:10}}>
