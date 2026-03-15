@@ -1485,7 +1485,8 @@ function Landing({onEnter, onToggleLang, lang}) {
     <div style={{background:C.bg,minHeight:"100vh",color:C.text,fontFamily:"'Inter',sans-serif"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0}
+        *{box-sizing:border-box}
+        body,div,h1,h2,h3,p,span,section,nav,footer,ul,li{margin:0;padding:0}
         ::-webkit-scrollbar{width:4px}
         ::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:99px}
         @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
@@ -1499,6 +1500,7 @@ function Landing({onEnter, onToggleLang, lang}) {
         .tc:hover{transform:translateY(-4px)}
         .nl{color:#4a6080;font-size:12px;letter-spacing:1px;cursor:pointer;transition:color 0.15s;text-decoration:none}
         .nl:hover{color:#94a3b8}
+        .preview-wrap{max-width:860px;margin:0 auto;padding:20px 20px 80px}
         /* ── RESPONSIVE ── */
         .nav-links{display:flex;gap:20px;align-items:center}
         .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px}
@@ -1573,12 +1575,12 @@ function Landing({onEnter, onToggleLang, lang}) {
       </section>
 
       {/* DASHBOARD PREVIEW */}
-      <section id="como" style={{padding:"20px 0 80px",maxWidth:860,margin:"0 auto",display:"block"}}>
+      <section id="como" className="preview-wrap">
         <div style={{marginBottom:32,textAlign:"center",maxWidth:960,margin:"0 auto 32px"}}>
           <div style={{fontSize:10,color:C.textDim,letterSpacing:2,marginBottom:10}}>{t.dashSub}</div>
           <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:28,fontWeight:800}}>{t.dashTitle}</h2>
         </div>
-        <div style={{background:C.bgMid,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",boxShadow:"0 24px 80px rgba(0,0,0,0.6)",margin:"0 20px"}}>
+        <div style={{background:C.bgMid,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",boxShadow:"0 24px 80px rgba(0,0,0,0.6)"}}>
           <div style={{background:C.bg,borderBottom:`1px solid ${C.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",gap:6}}>
               {["#ef4444","#f59e0b","#10b981"].map((c,i)=><div key={i} style={{width:10,height:10,borderRadius:"50%",background:c}}/>)}
