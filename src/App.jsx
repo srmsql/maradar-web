@@ -1573,11 +1573,12 @@ function Landing({onEnter, onToggleLang, lang}) {
       </section>
 
       {/* DASHBOARD PREVIEW */}
-      <section id="como" style={{padding:"20px 40px 80px",maxWidth:960,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+      <section id="como" style={{padding:"20px 40px 80px"}}>
         <div style={{marginBottom:32,textAlign:"center",maxWidth:960,margin:"0 auto 32px"}}>
           <div style={{fontSize:10,color:C.textDim,letterSpacing:2,marginBottom:10}}>{t.dashSub}</div>
           <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:28,fontWeight:800}}>{t.dashTitle}</h2>
         </div>
+        <div style={{maxWidth:800,margin:"0 auto"}}>
         <div style={{background:C.bgMid,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",boxShadow:"0 24px 80px rgba(0,0,0,0.6)"}}>
           <div style={{background:C.bg,borderBottom:`1px solid ${C.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",gap:6}}>
@@ -1597,6 +1598,7 @@ function Landing({onEnter, onToggleLang, lang}) {
           <div style={{padding:"20px 16px",textAlign:"center"}}>
             <button className="btn" onClick={onEnter} style={{background:`linear-gradient(135deg,${C.blue},${C.purple})`,borderRadius:8,padding:"11px 28px",color:"#fff",fontSize:12,fontWeight:700,letterSpacing:1,fontFamily:"inherit"}}>{t.seeAll}</button>
           </div>
+        </div>
         </div>
       </section>
 
