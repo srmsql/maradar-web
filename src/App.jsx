@@ -828,10 +828,10 @@ function DealCard({deal, onClick, selected, isPremium, onUpgrade, watched, onTog
     >
       <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10}}>
         <div style={{flex:1, minWidth:0}}>
-          <div style={{fontSize:10, color:TXT3, letterSpacing:0.8, marginBottom:3, textTransform:"uppercase"}}>
+          <div style={{fontSize:11, color:TXT3, letterSpacing:0.8, marginBottom:3, textTransform:"uppercase"}}>
             {deal.flag} {deal.sector} · {deal.region}
           </div>
-          <div style={{fontSize:15, fontWeight:700, color:TXT, fontFamily:"'JetBrains Mono',monospace", lineHeight:1.2}}>
+          <div style={{fontSize:16, fontWeight:700, color:TXT, fontFamily:"'JetBrains Mono',monospace", lineHeight:1.2}}>
             {deal.ticker}
             <span style={{color:TXT3, fontWeight:400, fontSize:13}}> · {deal.target}</span>
           </div>
@@ -1304,8 +1304,8 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
             [t.topTotal,  DEALS.length,  PURP],
           ].map(([l,v,c],i) => (
             <div key={i} style={{textAlign:"center"}}>
-              <div style={{fontSize:8,color:BDR2,letterSpacing:1.5,marginBottom:1}}>{l}</div>
-              <div style={{fontSize:15,color:c,fontWeight:700,fontFamily:"'JetBrains Mono',monospace"}}>{v}</div>
+              <div style={{fontSize:9,color:BDR2,letterSpacing:1,marginBottom:1}}>{l}</div>
+              <div style={{fontSize:16,color:c,fontWeight:700,fontFamily:"'JetBrains Mono',monospace"}}>{v}</div>
             </div>
           ))}
           <div style={{textAlign:"center", borderLeft:`1px solid ${BDR}`, paddingLeft:16}}>
@@ -1350,7 +1350,7 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
         <div style={{position:"relative",flexShrink:0}}>
           <span style={{position:"absolute",left:9,top:"50%",transform:"translateY(-50%)",fontSize:12,color:"#334155",pointerEvents:"none"}}>🔍</span>
           <input type="text" placeholder={t.searchPh} value={search} onChange={e=>setSearch(e.target.value)}
-            style={{background:BG,border:`1px solid ${BDR2}`,borderRadius:8,padding:"7px 28px 7px 28px",color:TXT,fontSize:11,fontFamily:"inherit",width:200,outline:"none"}}
+            style={{background:BG,border:`1px solid ${BDR2}`,borderRadius:8,padding:"7px 28px 7px 28px",color:TXT,fontSize:12,fontFamily:"inherit",width:200,outline:"none"}}
             onFocus={e=>e.target.style.borderColor=BLUE} onBlur={e=>e.target.style.borderColor=BDR2}
           />
           {search && <button onClick={()=>setSearch("")} style={{position:"absolute",right:7,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:TXT3,cursor:"pointer",fontSize:12,padding:0}}>✕</button>}
@@ -2136,7 +2136,6 @@ function AppInner() {
         setAuthReady(true);
       }
       if (event === "SIGNED_IN") {
-        // Only redirect on explicit login action
         if (session?.user) {
           try {
             const { data: profile } = await supabase
@@ -2148,7 +2147,11 @@ function AppInner() {
           } catch {
             setUser({ email: session.user.email, tier: "free", id: session.user.id });
           }
-          navigate("/dashboard");
+          // Only navigate if coming from email confirmation or explicit login
+          // Not if already on dashboard
+          if (!window.location.pathname.startsWith("/dashboard")) {
+            navigate("/dashboard");
+          }
         }
         setAuthReady(true);
       }
@@ -2208,7 +2211,7 @@ function AppInner() {
           <div style={{background:"#050d18",border:"1px solid #1e3a5f",borderRadius:16,padding:"32px 28px",width:"min(480px,92vw)",boxShadow:"0 24px 80px rgba(0,0,0,0.8)"}} onClick={e=>e.stopPropagation()}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
               <div>
-                <div style={{fontSize:20,fontWeight:800,color:"#f0f4f8"}}>{lang==="es"?"Desbloquea M&A RADAR":"Unlock M&A RADAR"}</div>
+                <div style={{fontSize:22,fontWeight:800,color:"#f0f4f8"}}>{lang==="es"?"Desbloquea M&A RADAR":"Unlock M&A RADAR"}</div>
                 <div style={{fontSize:13,color:"#4a6080",marginTop:4}}>{lang==="es"?"Elige tu plan y empieza ahora":"Choose your plan and start now"}</div>
               </div>
               <button onClick={()=>setShowUpgrade(false)} style={{background:"none",border:"none",color:"#4a6080",cursor:"pointer",fontSize:20}}>✕</button>
@@ -2224,7 +2227,7 @@ function AppInner() {
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:14}}>
                   {tier.features.map((f,i) => (
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:"#94a3b8"}}>
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:"#94a3b8"}}>
                       <span style={{color:tier.color,flexShrink:0}}>✓</span>{f}
                     </div>
                   ))}
