@@ -1378,7 +1378,7 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
         <div className="dash-left" style={{borderRight:`1px solid ${BDR}`,display:"flex",flexDirection:"column",overflow:"hidden"}}>
           {/* Tabs */}
           <div style={{display:"flex",borderBottom:`1px solid ${BDR}`,flexShrink:0}}>
-            {[["deals",t.tabDeals],["glossary",t.tabGlossary],...(isPremium?[["watchlist","★ "+( lang==="es"?"Guardados":"Saved")+(watchlist.length>0?` (${watchlist.length})`:"")]]:[]],["profile","👤"])
+            {[["deals",t.tabDeals],["glossary",t.tabGlossary],...(isPremium?[["watchlist","★ "+( lang==="es"?"Guardados":"Saved")+(watchlist.length>0?` (${watchlist.length})`:"")] ]:[]),["profile","👤"]]
               .map(([key,label]) => (
               <button key={key} onClick={()=>setTab(key)} style={{flex:1,padding:"10px",background:"transparent",border:"none",borderBottom:`2px solid ${tab===key?BLUE:"transparent"}`,color:tab===key?BLUE:TXT3,fontSize:11,fontWeight:tab===key?700:400,cursor:"pointer",letterSpacing:0.5,fontFamily:"inherit",transition:"all 0.15s"}}>
                 {label}
