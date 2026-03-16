@@ -2037,34 +2037,32 @@ export default function App() {
 
   // Listen to Supabase auth state changes
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("tier")
-          .eq("id", session.user.id)
-          .single();
-        setUser({ email: session.user.email, tier: profile?.tier || "free", id: session.user.id });
-        setView("dashboard");
-      }
-      setAuthReady(true);
-    });
-
-    // Subscribe to auth changes
+    // Use only onAuthStateChange — it fires INITIAL_SESSION on mount
+    // This avoids the dual-call lock conflict with getSession
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("tier")
-          .eq("id", session.user.id)
-          .single();
-        setUser({ email: session.user.email, tier: profile?.tier || "free", id: session.user.id });
-        setView("dashboard");
+      if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
+        if (session?.user) {
+          try {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("tier")
+              .eq("id", session.user.id)
+              .single();
+            setUser({ email: session.user.email, tier: profile?.tier || "free", id: session.user.id });
+            setView("dashboard");
+          } catch {
+            setUser({ email: session.user.email, tier: "free", id: session.user.id });
+            setView("dashboard");
+          }
+        } else {
+          setUser(null);
+        }
+        setAuthReady(true);
       }
       if (event === "SIGNED_OUT") {
         setUser(null);
         setView("landing");
+        setAuthReady(true);
       }
     });
 
