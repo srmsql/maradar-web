@@ -698,6 +698,46 @@ const RED   = "#ef4444";
 
 // ─── STAGE CONFIG ─────────────────────────────────────────────────────────────
 // ─── UTILITIES ────────────────────────────────────────────────────────────────
+// ─── COOKIE BANNER ───────────────────────────────────────────────────────────
+function CookieBanner({lang}) {
+  const [visible, setVisible] = useState(() => !localStorage.getItem("maradar_cookies"));
+
+  if (!visible) return null;
+
+  function accept() {
+    localStorage.setItem("maradar_cookies", "accepted");
+    setVisible(false);
+  }
+  function decline() {
+    localStorage.setItem("maradar_cookies", "declined");
+    setVisible(false);
+  }
+
+  return (
+    <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:9999,background:"#050d18",borderTop:"1px solid #1e3a5f",padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,boxShadow:"0 -4px 32px rgba(0,0,0,0.6)"}}>
+      <div style={{flex:1,minWidth:240}}>
+        <div style={{fontSize:13,color:"#f0f4f8",fontWeight:600,marginBottom:4}}>
+          {lang==="es"?"🍪 Usamos cookies":"🍪 We use cookies"}
+        </div>
+        <div style={{fontSize:11,color:"#64748b",lineHeight:1.6}}>
+          {lang==="es"
+            ? <>Usamos cookies esenciales para el funcionamiento del servicio y cookies analíticas para mejorar la experiencia. Consulta nuestra <a href="/privacy" style={{color:"#3b82f6",textDecoration:"none"}}>Política de Privacidad</a>.</>
+            : <>We use essential cookies for the service and analytics cookies to improve your experience. See our <a href="/privacy" style={{color:"#3b82f6",textDecoration:"none"}}>Privacy Policy</a>.</>
+          }
+        </div>
+      </div>
+      <div style={{display:"flex",gap:8,flexShrink:0}}>
+        <button onClick={decline} style={{background:"transparent",border:"1px solid #1e3a5f",borderRadius:7,padding:"8px 16px",color:"#64748b",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
+          {lang==="es"?"Solo esenciales":"Essential only"}
+        </button>
+        <button onClick={accept} style={{background:"linear-gradient(135deg,#3b82f6,#8b5cf6)",border:"none",borderRadius:7,padding:"8px 16px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+          {lang==="es"?"Aceptar todas":"Accept all"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── LOADING SPINNER ─────────────────────────────────────────────────────────
 function LoadingSpinner({size=24, color="#3b82f6", text=""}) {
   return (
@@ -1830,6 +1870,17 @@ function Landing({onEnter, onToggleLang, lang}) {
         </div>
         <div style={{fontSize:10,color:C.textDim,letterSpacing:0.5,maxWidth:500,lineHeight:1.6}}>{t.footerLegal}</div>
         <div style={{fontSize:10,color:C.textDim}}>© 2026 M&A RADAR</div>
+        <div style={{display:"flex",justifyContent:"center",gap:20,marginTop:10,flexWrap:"wrap"}}>
+          <a href="/privacy" style={{fontSize:10,color:"#334155",textDecoration:"none"}}>
+            {lang==="es"?"Política de Privacidad":"Privacy Policy"}
+          </a>
+          <a href="/terms" style={{fontSize:10,color:"#334155",textDecoration:"none"}}>
+            {lang==="es"?"Términos y Condiciones":"Terms & Conditions"}
+          </a>
+          <a href="mailto:sergirodriguezmartinez@gmail.com" style={{fontSize:10,color:"#334155",textDecoration:"none"}}>
+            {lang==="es"?"Contacto":"Contact"}
+          </a>
+        </div>
       </footer>
     </div>
   );
@@ -2122,6 +2173,137 @@ function LoginModal({onClose, onLogin, lang}) {
   );
 }
 
+// ─── PRIVACY + TERMS PAGES ───────────────────────────────────────────────────
+function LegalPage({type, lang}) {
+  const navigate = useNavigate();
+  const isPrivacy = type === "privacy";
+
+  const content = {
+    privacy: {
+      es: {
+        title: "Política de Privacidad",
+        updated: "Última actualización: 15 de marzo de 2026",
+        sections: [
+          { h: "1. Responsable del tratamiento", p: "Sergi Rodriguez Martinez, operador de M&A RADAR (maradar-web.vercel.app). Contacto: sergirodriguezmartinez@gmail.com" },
+          { h: "2. Datos que recopilamos", p: "Dirección de email (para crear tu cuenta). Tier de suscripción (free, investor, pro). Deals guardados en watchlist. Preferencias de idioma. Cookies técnicas de sesión y, si las aceptas, cookies analíticas." },
+          { h: "3. Base legal (GDPR Art. 6)", p: "Ejecución del contrato (Art. 6.1.b): para proporcionarte el servicio. Interés legítimo (Art. 6.1.f): para mejorar el servicio. Consentimiento (Art. 6.1.a): para cookies no esenciales." },
+          { h: "4. Tus derechos (GDPR Art. 15-22)", p: "Tienes derecho a: acceder a tus datos, rectificarlos, suprimirlos (derecho al olvido), oponerte al tratamiento, portabilidad de datos. Para ejercerlos, contacta a sergirodriguezmartinez@gmail.com o usa la opción 'Solicitar eliminación de cuenta' en tu perfil." },
+          { h: "5. Pagos", p: "Los pagos se procesan a través de Stripe, Inc. M&A RADAR nunca almacena datos de tarjeta de crédito. Consulta la política de privacidad de Stripe en stripe.com/privacy." },
+          { h: "6. Transferencias internacionales", p: "Supabase (base de datos) está alojado en AWS us-east-1 (Virginia, EE.UU.) con garantías adecuadas bajo el DPA de Supabase. Stripe opera bajo el EU-US Data Privacy Framework." },
+          { h: "7. Retención de datos", p: "Conservamos tus datos mientras mantengas tu cuenta activa. Al solicitar la eliminación, tus datos se borran en 30 días, excepto los que debamos conservar por obligación legal." },
+          { h: "8. Cookies", p: "Cookies esenciales: necesarias para el login y la sesión (no requieren consentimiento). Cookies analíticas: solo si las aceptas en el banner de cookies." },
+          { h: "9. Contacto y reclamaciones", p: "Para cualquier consulta: sergirodriguezmartinez@gmail.com. Si no estás satisfecho con nuestra respuesta, puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es)." },
+        ]
+      },
+      en: {
+        title: "Privacy Policy",
+        updated: "Last updated: March 15, 2026",
+        sections: [
+          { h: "1. Data Controller", p: "Sergi Rodriguez Martinez, operator of M&A RADAR (maradar-web.vercel.app). Contact: sergirodriguezmartinez@gmail.com" },
+          { h: "2. Data We Collect", p: "Email address (to create your account). Subscription tier (free, investor, pro). Deals saved in watchlist. Language preferences. Technical session cookies and, if accepted, analytics cookies." },
+          { h: "3. Legal Basis (GDPR Art. 6)", p: "Contract performance (Art. 6.1.b): to provide the service. Legitimate interest (Art. 6.1.f): to improve the service. Consent (Art. 6.1.a): for non-essential cookies." },
+          { h: "4. Your Rights (GDPR Art. 15-22)", p: "You have the right to: access your data, rectify it, erase it (right to be forgotten), object to processing, data portability. To exercise them, contact sergirodriguezmartinez@gmail.com or use 'Request account deletion' in your profile." },
+          { h: "5. Payments", p: "Payments are processed by Stripe, Inc. M&A RADAR never stores credit card data. See Stripe's privacy policy at stripe.com/privacy." },
+          { h: "6. International Transfers", p: "Supabase (database) is hosted on AWS us-east-1 (Virginia, USA) with adequate safeguards under Supabase's DPA. Stripe operates under the EU-US Data Privacy Framework." },
+          { h: "7. Data Retention", p: "We retain your data while your account is active. Upon deletion request, data is removed within 30 days, except data we must retain by legal obligation." },
+          { h: "8. Cookies", p: "Essential cookies: required for login and session (no consent needed). Analytics cookies: only if you accept them in the cookie banner." },
+          { h: "9. Contact and Complaints", p: "For any queries: sergirodriguezmartinez@gmail.com. If unsatisfied with our response, you may complain to your local data protection authority." },
+        ]
+      }
+    },
+    terms: {
+      es: {
+        title: "Términos y Condiciones",
+        updated: "Última actualización: 15 de marzo de 2026",
+        sections: [
+          { h: "1. Descripción del servicio", p: "M&A RADAR es una plataforma de seguimiento de operaciones de fusiones y adquisiciones (M&A) con fines informativos y educativos. No constituye asesoramiento financiero, de inversión, legal o fiscal." },
+          { h: "2. Aceptación de términos", p: "Al registrarte y usar M&A RADAR aceptas estos términos. Si no los aceptas, no debes usar el servicio." },
+          { h: "3. Descargo de responsabilidad", p: "IMPORTANTE: La información proporcionada en M&A RADAR es solo para fines informativos. No somos asesores financieros registrados. Toda inversión conlleva riesgo de pérdida. Los rendimientos pasados no garantizan resultados futuros. Siempre consulta con un asesor financiero cualificado antes de invertir." },
+          { h: "4. Planes y pagos", p: "Plan Free: gratuito, acceso básico. Plan Investor ($2.99/mes) y Pro ($3.99/mes): acceso completo. Los pagos se gestionan vía Stripe. Puedes cancelar en cualquier momento desde tu perfil. No hay reembolsos por periodos ya facturados." },
+          { h: "5. Uso aceptable", p: "No puedes: redistribuir los datos de M&A RADAR, hacer scraping automatizado, usar el servicio para fines ilegales, o compartir tu cuenta con terceros." },
+          { h: "6. Disponibilidad", p: "Nos esforzamos por mantener el servicio disponible 24/7 pero no garantizamos disponibilidad ininterrumpida. Podemos modificar o interrumpir el servicio con previo aviso." },
+          { h: "7. Ley aplicable", p: "Estos términos se rigen por la legislación española. Para disputas, ambas partes se someten a los juzgados de Barcelona, España." },
+          { h: "8. Contacto", p: "Para cualquier consulta sobre estos términos: sergirodriguezmartinez@gmail.com" },
+        ]
+      },
+      en: {
+        title: "Terms and Conditions",
+        updated: "Last updated: March 15, 2026",
+        sections: [
+          { h: "1. Service Description", p: "M&A RADAR is a mergers and acquisitions tracking platform for informational and educational purposes only. It does not constitute financial, investment, legal or tax advice." },
+          { h: "2. Acceptance of Terms", p: "By registering and using M&A RADAR you accept these terms. If you do not accept them, you must not use the service." },
+          { h: "3. Disclaimer", p: "IMPORTANT: Information provided on M&A RADAR is for informational purposes only. We are not registered financial advisors. All investments carry risk of loss. Past performance does not guarantee future results. Always consult a qualified financial advisor before investing." },
+          { h: "4. Plans and Payments", p: "Free Plan: free, basic access. Investor ($2.99/mo) and Pro ($3.99/mo): full access. Payments managed via Stripe. You can cancel anytime from your profile. No refunds for already billed periods." },
+          { h: "5. Acceptable Use", p: "You may not: redistribute M&A RADAR data, perform automated scraping, use the service for illegal purposes, or share your account with third parties." },
+          { h: "6. Availability", p: "We strive to keep the service available 24/7 but do not guarantee uninterrupted availability. We may modify or discontinue the service with prior notice." },
+          { h: "7. Governing Law", p: "These terms are governed by Spanish law. For disputes, both parties submit to the courts of Barcelona, Spain." },
+          { h: "8. Contact", p: "For any queries about these terms: sergirodriguezmartinez@gmail.com" },
+        ]
+      }
+    }
+  };
+
+  const d = content[type]?.[lang] || content[type]?.es;
+
+  return (
+    <div style={{background:"#030a14",minHeight:"100vh",fontFamily:"'Inter',sans-serif",color:"#f0f4f8"}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}`}</style>
+      {/* Topbar */}
+      <div style={{background:"#050d18",borderBottom:"1px solid #1e3a5f",padding:"0 24px",height:52,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <button onClick={()=>navigate("/")} style={{display:"flex",alignItems:"center",gap:8,background:"transparent",border:"none",cursor:"pointer",color:"#f0f4f8"}}>
+          <div style={{width:26,height:26,borderRadius:5,background:"linear-gradient(135deg,#3b82f6,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:900,color:"#fff"}}>M</div>
+          <span style={{fontSize:13,fontWeight:700,letterSpacing:1}}>M&A RADAR</span>
+        </button>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>navigate("/terms")} style={{background:"transparent",border:"none",color:type==="terms"?"#3b82f6":"#4a6080",fontSize:11,cursor:"pointer",fontFamily:"inherit",padding:"4px 8px"}}>
+            {lang==="es"?"Términos":"Terms"}
+          </button>
+          <button onClick={()=>navigate("/privacy")} style={{background:"transparent",border:"none",color:type==="privacy"?"#3b82f6":"#4a6080",fontSize:11,cursor:"pointer",fontFamily:"inherit",padding:"4px 8px"}}>
+            {lang==="es"?"Privacidad":"Privacy"}
+          </button>
+        </div>
+      </div>
+
+      <div style={{maxWidth:720,margin:"0 auto",padding:"40px 24px 80px"}}>
+        <div style={{fontSize:10,color:"#4a6080",letterSpacing:2,marginBottom:12,textTransform:"uppercase"}}>M&A RADAR · Legal</div>
+        <h1 style={{fontSize:28,fontWeight:800,marginBottom:8,lineHeight:1.2}}>{d.title}</h1>
+        <div style={{fontSize:11,color:"#334155",marginBottom:40}}>{d.updated}</div>
+
+        {!isPrivacy && (
+          <div style={{background:"#ef444411",border:"1px solid #ef444433",borderRadius:10,padding:"14px 18px",marginBottom:32}}>
+            <div style={{fontSize:13,color:"#ef4444",fontWeight:700,marginBottom:4}}>⚠️ {lang==="es"?"Aviso importante":"Important disclaimer"}</div>
+            <div style={{fontSize:12,color:"#fca5a5",lineHeight:1.7}}>
+              {lang==="es"
+                ? "M&A RADAR es una herramienta informativa. No somos asesores financieros. Invertir en merger arbitrage conlleva riesgos significativos incluyendo pérdida total del capital. Consulta siempre con un asesor cualificado."
+                : "M&A RADAR is an informational tool. We are not financial advisors. Investing in merger arbitrage carries significant risks including total loss of capital. Always consult a qualified advisor."}
+            </div>
+          </div>
+        )}
+
+        <div style={{display:"flex",flexDirection:"column",gap:28}}>
+          {d.sections.map((s,i) => (
+            <div key={i}>
+              <h2 style={{fontSize:15,fontWeight:700,color:"#94a3b8",marginBottom:10,paddingBottom:8,borderBottom:"1px solid #0d1e30"}}>{s.h}</h2>
+              <p style={{fontSize:13,color:"#64748b",lineHeight:1.8}}>{s.p}</p>
+            </div>
+          ))}
+        </div>
+
+        <div style={{marginTop:48,paddingTop:24,borderTop:"1px solid #0d1e30",display:"flex",gap:16,flexWrap:"wrap"}}>
+          <button onClick={()=>navigate("/")} style={{background:"transparent",border:"1px solid #1e3a5f",borderRadius:7,padding:"8px 16px",color:"#4a6080",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
+            ← {lang==="es"?"Volver al inicio":"Back to home"}
+          </button>
+          <button onClick={()=>navigate(isPrivacy?"/terms":"/privacy")} style={{background:"transparent",border:"1px solid #1e3a5f",borderRadius:7,padding:"8px 16px",color:"#4a6080",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
+            {lang==="es"
+              ? isPrivacy?"Ver Términos y Condiciones":"Ver Política de Privacidad"
+              : isPrivacy?"See Terms and Conditions":"See Privacy Policy"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── PROFILE PAGE ────────────────────────────────────────────────────────────
 function ProfilePage({user, onLogout, onUpgrade, onToggleLang, lang, watchlist, toggleWatch, allDeals}) {
   const tier = user?.tier || "free";
@@ -2326,9 +2508,15 @@ function AppInner() {
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut();
-    setUser(null);
-    navigate("/");
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch(e) {
+      console.error("signOut error:", e);
+    } finally {
+      setUser(null);
+      initialSessionDone.current = false;
+      navigate("/");
+    }
   }
 
   function handleSwitchTier(tier) {
@@ -2370,9 +2558,12 @@ function AppInner() {
               />
             : <Navigate to="/" replace/>
         }/>
+        <Route path="/privacy" element={<LegalPage type="privacy" lang={lang}/>}/>
+        <Route path="/terms" element={<LegalPage type="terms" lang={lang}/>}/>
         <Route path="*" element={<Navigate to="/" replace/>}/>
       </Routes>
       {showLogin && <LoginModal onClose={()=>setShowLogin(false)} onLogin={handleLogin} lang={lang}/>}
+      <CookieBanner lang={lang}/>
       {showUpgrade && (
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,backdropFilter:"blur(6px)"}} onClick={()=>setShowUpgrade(false)}>
           <div style={{background:"#050d18",border:"1px solid #1e3a5f",borderRadius:16,padding:"32px 28px",width:"min(480px,92vw)",boxShadow:"0 24px 80px rgba(0,0,0,0.8)"}} onClick={e=>e.stopPropagation()}>
