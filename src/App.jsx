@@ -1104,6 +1104,10 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
   const [livePrices,    setLivePrices]    = useState({});
   const [pricesLoading, setPricesLoading] = useState(false);
   const [pricesUpdated, setPricesUpdated] = useState(null);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem("maradar_onboarded");
+  });
+
   const [watchlist,     setWatchlist]     = useState(() => {
     try { return JSON.parse(localStorage.getItem("maradar_watchlist")) || []; }
     catch { return []; }
@@ -1354,6 +1358,7 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
         <span style={{fontSize:9,color:BDR2,letterSpacing:0.8}}>{t.footerDash}</span>
         <span style={{fontSize:9,color:BDR2,fontFamily:"monospace"}}>{t.version(new Date().toLocaleDateString(lang==="en"?"en-US":"es-ES"))}</span>
       </div>
+      {showOnboarding && <OnboardingModal onClose={()=>setShowOnboarding(false)} lang={lang}/>}
     </div>
   );
 }
@@ -1671,6 +1676,157 @@ function Landing({onEnter, onToggleLang, lang}) {
 }
 
 // ─── LOGIN MODAL ──────────────────────────────────────────────────────────────
+// ─── ONBOARDING MODAL ────────────────────────────────────────────────────────
+function OnboardingModal({onClose, lang}) {
+  const [step, setStep] = useState(0);
+
+  const steps = lang === "es" ? [
+    {
+      icon: "🎯",
+      title: "Bienvenido a M&A RADAR",
+      subtitle: "QUÉ ES ESTO",
+      body: "El merger arbitrage es una estrategia usada por hedge funds para ganar dinero cuando una empresa es adquirida por otra. Compras acciones de la empresa objetivo a precio de mercado y esperas cobrar el precio de oferta cuando el deal cierra.",
+      highlight: "Retornos predecibles en 30-90 días, con correlación casi nula con el mercado.",
+      color: "#3b82f6",
+    },
+    {
+      icon: "📊",
+      title: "El Spread y la TIR Anual",
+      subtitle: "CÓMO LEER LOS NÚMEROS",
+      body: "El spread es la diferencia entre el precio actual de la acción y el precio de oferta. Si cotiza a $96 y la oferta es $100, el spread es +4% — tu beneficio si el deal cierra.",
+      highlight: "La TIR Anual te dice cuánto equivale ese % en términos anuales. Un +3% en 45 días = ~25% anualizado.",
+      color: "#10b981",
+    },
+    {
+      icon: "🚦",
+      title: "Las Señales de Entrada",
+      subtitle: "QUÉ HACER CON CADA DEAL",
+      body: "Cada deal tiene una señal clara basada en la probabilidad de cierre, el riesgo regulatorio y el spread:",
+      signals: [
+        {label:"COMPRAR",   color:"#10b981", desc:"Alta prob. de cierre, spread atractivo, riesgo bajo."},
+        {label:"ACUMULAR",  color:"#3b82f6", desc:"Oportunidad atractiva con riesgo moderado controlable."},
+        {label:"CAUTO",     color:"#f59e0b", desc:"Factores de riesgo significativos. Monitorizar."},
+        {label:"EVITAR",    color:"#ef4444", desc:"Riesgo de ruptura muy alto. El spread es una trampa."},
+      ],
+      color: "#8b5cf6",
+    },
+    {
+      icon: "🔓",
+      title: "Tu Plan Actual",
+      subtitle: "QUÉ TIENES DESBLOQUEADO",
+      body: "Con el plan Free puedes ver todos los deals, sus nombres, sectores y stages. Para desbloquear señales, spreads en tiempo real, probabilidad de cierre y análisis de riesgo completo, actualiza a Investor por $2.99/mes.",
+      highlight: "Puedes hacer upgrade en cualquier momento desde el botón ⬆ UPGRADE del dashboard.",
+      color: "#8b5cf6",
+    },
+  ] : [
+    {
+      icon: "🎯",
+      title: "Welcome to M&A RADAR",
+      subtitle: "WHAT IS THIS",
+      body: "Merger arbitrage is a strategy used by hedge funds to profit when one company acquires another. You buy shares of the target company at market price and wait to receive the offer price when the deal closes.",
+      highlight: "Predictable returns in 30-90 days, with near-zero correlation to the market.",
+      color: "#3b82f6",
+    },
+    {
+      icon: "📊",
+      title: "Spread & Annualized Return",
+      subtitle: "HOW TO READ THE NUMBERS",
+      body: "The spread is the difference between the current stock price and the offer price. If it trades at $96 and the offer is $100, the spread is +4% — your profit if the deal closes.",
+      highlight: "The Ann. Return tells you what that % means annually. A +3% in 45 days = ~25% annualized.",
+      color: "#10b981",
+    },
+    {
+      icon: "🚦",
+      title: "Entry Signals",
+      subtitle: "WHAT TO DO WITH EACH DEAL",
+      body: "Each deal has a clear signal based on closing probability, regulatory risk and spread:",
+      signals: [
+        {label:"BUY",        color:"#10b981", desc:"High closing probability, attractive spread, low risk."},
+        {label:"ACCUMULATE", color:"#3b82f6", desc:"Attractive opportunity with manageable moderate risk."},
+        {label:"CAUTION",    color:"#f59e0b", desc:"Significant risk factors. Monitor before entering."},
+        {label:"AVOID",      color:"#ef4444", desc:"Very high break risk. The spread is a trap."},
+      ],
+      color: "#8b5cf6",
+    },
+    {
+      icon: "🔓",
+      title: "Your Current Plan",
+      subtitle: "WHAT YOU HAVE UNLOCKED",
+      body: "With the Free plan you can see all deals, their names, sectors and stages. To unlock signals, real-time spreads, closing probability and full risk analysis, upgrade to Investor for $2.99/mo.",
+      highlight: "You can upgrade anytime from the ⬆ UPGRADE button in the dashboard.",
+      color: "#8b5cf6",
+    },
+  ];
+
+  const s = steps[step];
+  const isLast = step === steps.length - 1;
+
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2000,backdropFilter:"blur(8px)"}}>
+      <div style={{background:"#050d18",border:`1px solid ${s.color}44`,borderRadius:18,padding:"36px 32px",width:"min(520px,92vw)",boxShadow:`0 24px 80px ${s.color}22`,transition:"all 0.3s"}}>
+
+        {/* Progress dots */}
+        <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:28}}>
+          {steps.map((_,i) => (
+            <div key={i} onClick={()=>setStep(i)} style={{width:i===step?24:8,height:8,borderRadius:99,background:i===step?s.color:i<step?"#1e3a5f":"#0d1e30",transition:"all 0.3s",cursor:"pointer"}}/>
+          ))}
+        </div>
+
+        {/* Icon + subtitle */}
+        <div style={{textAlign:"center",marginBottom:20}}>
+          <div style={{fontSize:48,marginBottom:12}}>{s.icon}</div>
+          <div style={{fontSize:10,color:s.color,letterSpacing:2,marginBottom:8,fontWeight:700}}>{s.subtitle}</div>
+          <h2 style={{fontSize:22,fontWeight:800,color:"#f0f4f8",lineHeight:1.2}}>{s.title}</h2>
+        </div>
+
+        {/* Body */}
+        <p style={{fontSize:14,color:"#94a3b8",lineHeight:1.8,marginBottom:16,textAlign:"center"}}>{s.body}</p>
+
+        {/* Signals (step 3 only) */}
+        {s.signals && (
+          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+            {s.signals.map((sig,i) => (
+              <div key={i} style={{display:"flex",alignItems:"center",gap:12,background:"#0a1628",borderRadius:8,padding:"8px 14px",border:`1px solid ${sig.color}22`}}>
+                <span style={{background:sig.color+"22",color:sig.color,border:`1px solid ${sig.color}44`,borderRadius:5,padding:"2px 9px",fontSize:10,fontWeight:800,letterSpacing:1,flexShrink:0}}>{sig.label}</span>
+                <span style={{fontSize:12,color:"#4a6080"}}>{sig.desc}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Highlight box */}
+        {s.highlight && (
+          <div style={{background:s.color+"11",border:`1px solid ${s.color}33`,borderRadius:10,padding:"10px 16px",marginBottom:20,textAlign:"center"}}>
+            <p style={{fontSize:12,color:s.color,fontWeight:600,lineHeight:1.6,margin:0}}>{s.highlight}</p>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+          {step > 0 && (
+            <button onClick={()=>setStep(s=>s-1)} style={{background:"transparent",border:"1px solid #1e3a5f",borderRadius:9,padding:"11px 24px",color:"#4a6080",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+              ←
+            </button>
+          )}
+          <button onClick={()=>{ if(isLast){ localStorage.setItem("maradar_onboarded","1"); onClose(); } else setStep(s=>s+1); }}
+            style={{flex:1,background:`linear-gradient(135deg,${s.color},${s.color === "#3b82f6" ? "#8b5cf6" : s.color})`,border:"none",borderRadius:9,padding:"13px 24px",color:"#fff",fontSize:14,fontWeight:700,letterSpacing:0.5,cursor:"pointer",fontFamily:"inherit",boxShadow:`0 4px 20px ${s.color}44`}}>
+            {isLast ? (lang==="es"?"EMPEZAR →":"LET'S GO →") : (lang==="es"?"SIGUIENTE →":"NEXT →")}
+          </button>
+        </div>
+
+        {/* Skip */}
+        {!isLast && (
+          <div style={{textAlign:"center",marginTop:14}}>
+            <span onClick={()=>{ localStorage.setItem("maradar_onboarded","1"); onClose(); }} style={{fontSize:11,color:"#1e3a5f",cursor:"pointer"}}>
+              {lang==="es"?"Saltar tutorial":"Skip tutorial"}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function LoginModal({onClose, onLogin, lang}) {
   const t = useT();
   const [email,    setEmail]    = useState("");
