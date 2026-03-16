@@ -2121,10 +2121,14 @@ function AppInner() {
   const [authReady, setAuthReady] = useState(false);
   const navigate = useNavigate();
 
+  // Track whether the initial session check has completed
+  const initialSessionDone = useRef(false);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+
       if (event === "INITIAL_SESSION") {
-        // On page load — restore session silently, don't redirect
+        // Page load — restore user silently, NEVER redirect
         if (session?.user) {
           try {
             const { data: profile } = await supabase
@@ -2139,9 +2143,15 @@ function AppInner() {
         } else {
           setUser(null);
         }
+        initialSessionDone.current = true;
         setAuthReady(true);
+        return; // ← Never redirect on page load
       }
+
       if (event === "SIGNED_IN") {
+        // Only redirect if this is a real new login (not a session restore)
+        // initialSessionDone.current will be true if INITIAL_SESSION already fired
+        const isNewLogin = !initialSessionDone.current;
         if (session?.user) {
           try {
             const { data: profile } = await supabase
@@ -2153,16 +2163,17 @@ function AppInner() {
           } catch {
             setUser({ email: session.user.email, tier: "free", id: session.user.id });
           }
-          // Only navigate if coming from email confirmation or explicit login
-          // Not if already on dashboard
-          if (!window.location.pathname.startsWith("/dashboard")) {
+          if (isNewLogin) {
             navigate("/dashboard");
           }
         }
         setAuthReady(true);
+        return;
       }
+
       if (event === "SIGNED_OUT") {
         setUser(null);
+        initialSessionDone.current = false;
         navigate("/");
         setAuthReady(true);
       }
