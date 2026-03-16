@@ -1378,7 +1378,7 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
         <div className="dash-left" style={{borderRight:`1px solid ${BDR}`,display:"flex",flexDirection:"column",overflow:"hidden"}}>
           {/* Tabs */}
           <div style={{display:"flex",borderBottom:`1px solid ${BDR}`,flexShrink:0}}>
-            {[["deals",t.tabDeals],["glossary",t.tabGlossary],...(isPremium?[["watchlist","★ "+( lang==="es"?"Guardados":"Saved")+(watchlist.length>0?` (${watchlist.length})`:"")]]:[])]
+            {[["deals",t.tabDeals],["glossary",t.tabGlossary],...(isPremium?[["watchlist","★ "+( lang==="es"?"Guardados":"Saved")+(watchlist.length>0?` (${watchlist.length})`:"")]]:[]],["profile","👤"])
               .map(([key,label]) => (
               <button key={key} onClick={()=>setTab(key)} style={{flex:1,padding:"10px",background:"transparent",border:"none",borderBottom:`2px solid ${tab===key?BLUE:"transparent"}`,color:tab===key?BLUE:TXT3,fontSize:11,fontWeight:tab===key?700:400,cursor:"pointer",letterSpacing:0.5,fontFamily:"inherit",transition:"all 0.15s"}}>
                 {label}
@@ -2109,14 +2109,16 @@ function LoginModal({onClose, onLogin, lang}) {
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
 function AppInner() {
   const [user,      setUser]      = useState(null);
-  const [showLogin, setShowLogin] = useState(false);
+  const [showLogin,   setShowLogin]   = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const [lang,      setLang]      = useState(() => localStorage.getItem("maradar_lang") || "es");
   const [authReady, setAuthReady] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
+      if (event === "INITIAL_SESSION") {
+        // On page load — restore session silently, don't redirect
         if (session?.user) {
           try {
             const { data: profile } = await supabase
@@ -2125,15 +2127,28 @@ function AppInner() {
               .eq("id", session.user.id)
               .single();
             setUser({ email: session.user.email, tier: profile?.tier || "free", id: session.user.id });
-            if (window.location.pathname === "/" || window.location.pathname === "") {
-              navigate("/dashboard");
-            }
           } catch {
             setUser({ email: session.user.email, tier: "free", id: session.user.id });
-            navigate("/dashboard");
           }
         } else {
           setUser(null);
+        }
+        setAuthReady(true);
+      }
+      if (event === "SIGNED_IN") {
+        // Only redirect on explicit login action
+        if (session?.user) {
+          try {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("tier")
+              .eq("id", session.user.id)
+              .single();
+            setUser({ email: session.user.email, tier: profile?.tier || "free", id: session.user.id });
+          } catch {
+            setUser({ email: session.user.email, tier: "free", id: session.user.id });
+          }
+          navigate("/dashboard");
         }
         setAuthReady(true);
       }
@@ -2177,17 +2192,52 @@ function AppInner() {
         }/>
         <Route path="/dashboard" element={
           user
-            ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowLogin(true)} onToggleLang={toggleLang} lang={lang}/>
+            ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowUpgrade(true)} onToggleLang={toggleLang} lang={lang}/>
             : <Navigate to="/" replace/>
         }/>
         <Route path="/dashboard/deal/:ticker" element={
           user
-            ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowLogin(true)} onToggleLang={toggleLang} lang={lang}/>
+            ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowUpgrade(true)} onToggleLang={toggleLang} lang={lang}/>
             : <Navigate to="/" replace/>
         }/>
         <Route path="*" element={<Navigate to="/" replace/>}/>
       </Routes>
       {showLogin && <LoginModal onClose={()=>setShowLogin(false)} onLogin={handleLogin} lang={lang}/>}
+      {showUpgrade && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,backdropFilter:"blur(6px)"}} onClick={()=>setShowUpgrade(false)}>
+          <div style={{background:"#050d18",border:"1px solid #1e3a5f",borderRadius:16,padding:"32px 28px",width:"min(480px,92vw)",boxShadow:"0 24px 80px rgba(0,0,0,0.8)"}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
+              <div>
+                <div style={{fontSize:20,fontWeight:800,color:"#f0f4f8"}}>{lang==="es"?"Desbloquea M&A RADAR":"Unlock M&A RADAR"}</div>
+                <div style={{fontSize:13,color:"#4a6080",marginTop:4}}>{lang==="es"?"Elige tu plan y empieza ahora":"Choose your plan and start now"}</div>
+              </div>
+              <button onClick={()=>setShowUpgrade(false)} style={{background:"none",border:"none",color:"#4a6080",cursor:"pointer",fontSize:20}}>✕</button>
+            </div>
+            {[
+              {key:"investor",label:"Investor",price:"$2.99/mo",color:"#3b82f6",features:lang==="es"?["Señales COMPRAR/ACUMULAR/CAUTO/EVITAR","Spread % en tiempo real","Probabilidad de cierre","Análisis de riesgo completo","Timeline por deal","Cobertura USA + Europa","Newsletter semanal"]:["BUY/ACCUMULATE/CAUTION/AVOID signals","Real-time spread %","Closing probability","Full risk analysis","Deal timeline","USA + Europe coverage","Weekly newsletter"]},
+              {key:"pro",label:"Pro",price:"$3.99/mo",color:"#8b5cf6",features:lang==="es"?["Todo lo de Investor","Watchlist personalizada","Alertas email por deal","Exportar CSV/Excel","Historial completo"]:["Everything in Investor","Personal watchlist","Email alerts per deal","Export CSV/Excel","Full deal history"]},
+            ].map(tier => (
+              <div key={tier.key} style={{background:tier.color+"11",border:`1px solid ${tier.color}33`,borderRadius:12,padding:"16px 20px",marginBottom:12}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                  <span style={{fontSize:16,fontWeight:800,color:tier.color}}>{tier.label}</span>
+                  <span style={{fontSize:16,fontWeight:700,color:"#f0f4f8",fontFamily:"monospace"}}>{tier.price}</span>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:14}}>
+                  {tier.features.map((f,i) => (
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:"#94a3b8"}}>
+                      <span style={{color:tier.color,flexShrink:0}}>✓</span>{f}
+                    </div>
+                  ))}
+                </div>
+                <button onClick={()=>{ setShowUpgrade(false); setShowLogin(true); }} style={{width:"100%",background:`linear-gradient(135deg,${tier.color},${tier.key==="investor"?"#8b5cf6":"#6366f1"})`,border:"none",borderRadius:8,padding:"11px",color:"#fff",fontSize:13,fontWeight:700,letterSpacing:0.5,cursor:"pointer",fontFamily:"inherit"}}>
+                  {lang==="es"?`EMPEZAR ${tier.label.toUpperCase()} →`:`START ${tier.label.toUpperCase()} →`}
+                </button>
+              </div>
+            ))}
+            <div style={{fontSize:11,color:"#1e3a5f",textAlign:"center",marginTop:8}}>{lang==="es"?"Sin permanencia. Cancela cuando quieras.":"No commitment. Cancel anytime."}</div>
+          </div>
+        </div>
+      )}
     </LangCtx.Provider>
   );
 }
