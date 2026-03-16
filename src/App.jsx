@@ -1185,6 +1185,7 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
   const [livePrices,    setLivePrices]    = useState({});
   const [pricesLoading, setPricesLoading] = useState(false);
   const [pricesUpdated, setPricesUpdated] = useState(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem("maradar_onboarded");
   });
@@ -1202,6 +1203,15 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
       return next;
     });
   }
+
+  // Close profile menu on outside click
+  useEffect(() => {
+    function handleClick(e) {
+      if (!e.target.closest("[data-profile-menu]")) setShowProfileMenu(false);
+    }
+    if (showProfileMenu) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showProfileMenu]);
 
   useEffect(() => {
     async function loadPrices() {
@@ -1334,9 +1344,54 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
                 )}
                 <button onClick={onToggleLang} style={{background:"transparent",border:`1px solid ${BDR2}`,borderRadius:7,padding:"4px 8px",color:TXT3,fontSize:10,cursor:"pointer",fontFamily:"inherit"}}>{lang==="es"?"EN":"ES"}</button>
                 <div style={{position:"relative"}}>
-                  <button onClick={()=>setTab("profile")} style={{background:tab==="profile"?BLUE+"22":"transparent",border:`1px solid ${tab==="profile"?BLUE+"66":BDR2}`,borderRadius:7,padding:"5px 10px",color:tab==="profile"?BLUE:TXT3,fontSize:11,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
-                    👤 {user?.email?.split("@")[0]}
+                  <button
+                    onClick={()=>setShowProfileMenu(m=>!m)}
+                    style={{background:showProfileMenu?BLUE+"22":"transparent",border:`1px solid ${showProfileMenu?BLUE+"66":BDR2}`,borderRadius:7,padding:"5px 10px",color:showProfileMenu?BLUE:TXT2,fontSize:11,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}
+                  >
+                    👤 <span style={{maxWidth:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user?.email?.split("@")[0]}</span>
+                    <span style={{fontSize:8,opacity:0.6}}>{showProfileMenu?"▲":"▼"}</span>
                   </button>
+                  {showProfileMenu && (
+                    <div style={{position:"absolute",top:"calc(100% + 6px)",right:0,zIndex:500,background:"#0a1628",border:`1px solid ${BDR2}`,borderRadius:12,padding:8,minWidth:240,boxShadow:"0 8px 32px rgba(0,0,0,0.7)"}}>
+                      {/* User info */}
+                      <div style={{padding:"10px 12px",borderBottom:`1px solid ${BDR}`,marginBottom:6}}>
+                        <div style={{fontSize:12,color:TXT,fontWeight:600,marginBottom:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user?.email}</div>
+                        <span style={{background:tier==="pro"?PURP+"22":tier==="investor"?BLUE+"22":"#334155",border:`1px solid ${tier==="pro"?PURP+"44":tier==="investor"?BLUE+"44":"#334155"}`,borderRadius:4,padding:"2px 7px",fontSize:10,color:tier==="pro"?PURP:tier==="investor"?BLUE:"#94a3b8",fontWeight:700,letterSpacing:0.8}}>
+                          {tier.toUpperCase()}
+                        </span>
+                      </div>
+                      {/* Menu items */}
+                      {[
+                        {icon:"🏠", label:lang==="es"?"Mi Dashboard":"My Dashboard", action:()=>{ navigate("/dashboard"); setShowProfileMenu(false); }},
+                        {icon:"⚙️", label:lang==="es"?"Mi Perfil":"My Profile", action:()=>{ navigate("/profile"); setShowProfileMenu(false); }},
+                        ...(isPremium?[{icon:"★", label:lang==="es"?`Watchlist (${watchlist.length})`:`Watchlist (${watchlist.length})`, action:()=>{ setTab("watchlist"); setShowProfileMenu(false); }}]:[]),
+                        {icon:"🌐", label:lang==="es"?"Idioma: Español → EN":"Language: English → ES", action:()=>{ onToggleLang(); setShowProfileMenu(false); }},
+                        {icon:"🎓", label:lang==="es"?"Ver tutorial":"See tutorial", action:()=>{ localStorage.removeItem("maradar_onboarded"); window.location.reload(); }},
+                      ].map((item,i)=>(
+                        <button key={i} onClick={item.action} style={{width:"100%",background:"transparent",border:"none",borderRadius:8,padding:"9px 12px",color:TXT2,fontSize:12,cursor:"pointer",fontFamily:"inherit",textAlign:"left",display:"flex",alignItems:"center",gap:8,transition:"background 0.1s"}}
+                          onMouseEnter={e=>e.currentTarget.style.background=BDR}
+                          onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+                        >
+                          <span>{item.icon}</span><span>{item.label}</span>
+                        </button>
+                      ))}
+                      {!isPremium && (
+                        <div style={{padding:"8px 8px 4px",borderTop:`1px solid ${BDR}`,marginTop:4}}>
+                          <button onClick={()=>{ onUpgrade(); setShowProfileMenu(false); }} style={{width:"100%",background:`linear-gradient(135deg,${BLUE},${PURP})`,border:"none",borderRadius:8,padding:"9px 12px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                            ⬆ {lang==="es"?"UPGRADE — $2.99/mes":"UPGRADE — $2.99/mo"}
+                          </button>
+                        </div>
+                      )}
+                      <div style={{padding:"8px 8px 4px",borderTop:`1px solid ${BDR}`,marginTop:4}}>
+                        <button onClick={async()=>{ await onLogout(); setShowProfileMenu(false); }} style={{width:"100%",background:"transparent",border:"none",borderRadius:8,padding:"9px 12px",color:"#64748b",fontSize:12,cursor:"pointer",fontFamily:"inherit",textAlign:"left",display:"flex",alignItems:"center",gap:8}}
+                          onMouseEnter={e=>e.currentTarget.style.background=BDR}
+                          onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+                        >
+                          <span>↩</span><span>{lang==="es"?"Cerrar sesión":"Sign out"}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
@@ -1383,7 +1438,7 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
         <div className="dash-left" style={{borderRight:`1px solid ${BDR}`,display:"flex",flexDirection:"column",overflow:"hidden"}}>
           {/* Tabs */}
           <div style={{display:"flex",borderBottom:`1px solid ${BDR}`,flexShrink:0}}>
-            {[["deals",t.tabDeals],["glossary",t.tabGlossary],...(isPremium?[["watchlist","★ "+( lang==="es"?"Guardados":"Saved")+(watchlist.length>0?` (${watchlist.length})`:"")] ]:[]),["profile","👤"]]
+            {[["deals",t.tabDeals],["glossary",t.tabGlossary],...(isPremium?[["watchlist","★ "+( lang==="es"?"Guardados":"Saved")+(watchlist.length>0?` (${watchlist.length})`:"")] ]:[])]
               .map(([key,label]) => (
               <button key={key} onClick={()=>setTab(key)} style={{flex:1,padding:"10px",background:"transparent",border:"none",borderBottom:`2px solid ${tab===key?BLUE:"transparent"}`,color:tab===key?BLUE:TXT3,fontSize:11,fontWeight:tab===key?700:400,cursor:"pointer",letterSpacing:0.5,fontFamily:"inherit",transition:"all 0.15s"}}>
                 {label}
@@ -1412,63 +1467,6 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
                   ))}
                 </div>
               )
-            ) : tab === "profile" ? (
-              <div style={{padding:"16px 4px"}}>
-                {/* User info */}
-                <div style={{background:BDR,borderRadius:10,padding:"16px",marginBottom:16}}>
-                  <div style={{fontSize:9,color:TXT3,letterSpacing:1.5,marginBottom:8,textTransform:"uppercase"}}>{lang==="es"?"Tu cuenta":"Your account"}</div>
-                  <div style={{fontSize:13,color:TXT,fontWeight:600,marginBottom:4}}>{user?.email}</div>
-                  <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{background:tier==="pro"?PURP+"22":tier==="investor"?BLUE+"22":"#334155",border:`1px solid ${tier==="pro"?PURP+"44":tier==="investor"?BLUE+"44":"#475569"}`,borderRadius:5,padding:"2px 8px",fontSize:10,color:tier==="pro"?PURP:tier==="investor"?BLUE:"#94a3b8",fontWeight:700,letterSpacing:1}}>
-                      {tier.toUpperCase()}
-                    </span>
-                    {!isPremium && <span style={{fontSize:11,color:TXT3}}>{lang==="es"?"Plan gratuito":"Free plan"}</span>}
-                  </div>
-                </div>
-
-                {/* Upgrade CTA for free users */}
-                {!isPremium && (
-                  <div onClick={onUpgrade} style={{background:`linear-gradient(135deg,${BLUE}22,${PURP}22)`,border:`1px solid ${BLUE}44`,borderRadius:10,padding:"14px 16px",marginBottom:16,cursor:"pointer",textAlign:"center"}}>
-                    <div style={{fontSize:13,fontWeight:700,color:TXT,marginBottom:4}}>{lang==="es"?"Desbloquea todo por $2.99/mes":"Unlock everything for $2.99/mo"}</div>
-                    <div style={{fontSize:11,color:TXT3,marginBottom:10}}>{lang==="es"?"Señales, spreads, análisis completo":"Signals, spreads, full analysis"}</div>
-                    <div style={{background:`linear-gradient(135deg,${BLUE},${PURP})`,borderRadius:7,padding:"8px 20px",display:"inline-block",fontSize:12,color:"#fff",fontWeight:700}}>
-                      {lang==="es"?"⬆ UPGRADE →":"⬆ UPGRADE →"}
-                    </div>
-                  </div>
-                )}
-
-                {/* Settings */}
-                <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-                  <div style={{fontSize:9,color:TXT3,letterSpacing:1.5,marginBottom:4,textTransform:"uppercase"}}>{lang==="es"?"Ajustes":"Settings"}</div>
-                  <button onClick={onToggleLang} style={{background:BDR,border:`1px solid ${BDR2}`,borderRadius:8,padding:"10px 14px",color:TXT2,fontSize:12,cursor:"pointer",fontFamily:"inherit",textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <span>🌐 {lang==="es"?"Idioma: Español":"Language: English"}</span>
-                    <span style={{fontSize:10,color:TXT3}}>{lang==="es"?"→ EN":"→ ES"}</span>
-                  </button>
-                  <button onClick={()=>{ localStorage.removeItem("maradar_onboarded"); window.location.reload(); }} style={{background:BDR,border:`1px solid ${BDR2}`,borderRadius:8,padding:"10px 14px",color:TXT2,fontSize:12,cursor:"pointer",fontFamily:"inherit",textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <span>🎓 {lang==="es"?"Ver tutorial de nuevo":"See tutorial again"}</span>
-                    <span style={{fontSize:10,color:TXT3}}>→</span>
-                  </button>
-                </div>
-
-                {/* Danger zone */}
-                <div style={{borderTop:`1px solid ${BDR}`,paddingTop:16}}>
-                  <div style={{fontSize:9,color:"#ef4444",letterSpacing:1.5,marginBottom:8,textTransform:"uppercase"}}>{lang==="es"?"Zona peligrosa":"Danger zone"}</div>
-                  <button onClick={async()=>{ await onLogout(); }} style={{width:"100%",background:"transparent",border:"1px solid #1e3a5f",borderRadius:8,padding:"12px 14px",color:"#94a3b8",fontSize:13,cursor:"pointer",fontFamily:"inherit",marginBottom:8,textAlign:"left",fontWeight:500}}>
-                    ↩ {lang==="es"?"Cerrar sesión":"Sign out"}
-                  </button>
-                  <button onClick={async()=>{
-                    if(window.confirm(lang==="es"?"¿Seguro que quieres eliminar tu cuenta? Esta acción no se puede deshacer.":"Are you sure you want to delete your account? This cannot be undone.")) {
-                      await supabase.rpc("request_data_deletion", {p_user_id: user?.id});
-                      await supabase.auth.signOut();
-                    }
-                  }} style={{width:"100%",background:"#ef444411",border:"1px solid #ef444433",borderRadius:8,padding:"10px 14px",color:"#ef4444",fontSize:12,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>
-                    🗑 {lang==="es"?"Solicitar eliminación de cuenta":"Request account deletion"}
-                  </button>
-                  <div style={{fontSize:9,color:"#334155",marginTop:6,lineHeight:1.6}}>
-                    {lang==="es"?"Conforme al GDPR Art. 17. Tu cuenta será eliminada en 30 días.":"Per GDPR Art. 17. Your account will be deleted within 30 days."}
-                  </div>
-                </div>
-              </div>
             ) : tab === "deals" ? (
               filtered.length === 0 ? (
                 <div style={{textAlign:"center",padding:"48px 24px"}}>
@@ -2112,6 +2110,129 @@ function LoginModal({onClose, onLogin, lang}) {
   );
 }
 
+// ─── PROFILE PAGE ────────────────────────────────────────────────────────────
+function ProfilePage({user, onLogout, onUpgrade, onToggleLang, lang, watchlist, toggleWatch, allDeals}) {
+  const tier = user?.tier || "free";
+  const isPremium = tier === "investor" || tier === "pro";
+  const navigate = useNavigate();
+
+  return (
+    <div style={{background:BG,minHeight:"100vh",fontFamily:"'Inter',sans-serif",color:TXT}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}`}</style>
+      {/* Topbar */}
+      <div style={{background:BG2,borderBottom:`1px solid ${BDR}`,padding:"0 24px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+        <button onClick={()=>navigate("/dashboard")} style={{display:"flex",alignItems:"center",gap:10,background:"transparent",border:"none",cursor:"pointer",color:TXT}}>
+          <div style={{width:28,height:28,borderRadius:6,background:`linear-gradient(135deg,${BLUE},${PURP})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:900,color:"#fff"}}>M</div>
+          <div>
+            <div style={{fontSize:13,fontWeight:800,letterSpacing:2,color:TXT}}>M&A RADAR</div>
+            <div style={{fontSize:8,color:BDR2,letterSpacing:1.5}}>← {lang==="es"?"Volver al dashboard":"Back to dashboard"}</div>
+          </div>
+        </button>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <button onClick={onToggleLang} style={{background:"transparent",border:`1px solid ${BDR2}`,borderRadius:7,padding:"4px 8px",color:TXT3,fontSize:10,cursor:"pointer",fontFamily:"inherit"}}>{lang==="es"?"EN":"ES"}</button>
+          <button onClick={async()=>{ await onLogout(); }} style={{background:"transparent",border:`1px solid ${BDR2}`,borderRadius:7,padding:"4px 8px",color:TXT3,fontSize:10,cursor:"pointer",fontFamily:"inherit"}}>↩</button>
+        </div>
+      </div>
+
+      <div style={{maxWidth:720,margin:"0 auto",padding:"32px 24px"}}>
+        {/* Account info */}
+        <div style={{background:BG2,border:`1px solid ${BDR}`,borderRadius:14,padding:"24px",marginBottom:20}}>
+          <div style={{fontSize:10,color:TXT3,letterSpacing:1.5,marginBottom:12,textTransform:"uppercase"}}>{lang==="es"?"Tu cuenta":"Your account"}</div>
+          <div style={{fontSize:16,color:TXT,fontWeight:700,marginBottom:8}}>{user?.email}</div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{background:tier==="pro"?PURP+"22":tier==="investor"?BLUE+"22":"#334155",border:`1px solid ${tier==="pro"?PURP+"44":tier==="investor"?BLUE+"44":"#334155"}`,borderRadius:5,padding:"3px 10px",fontSize:11,color:tier==="pro"?PURP:tier==="investor"?BLUE:"#94a3b8",fontWeight:700,letterSpacing:1}}>
+              {tier.toUpperCase()}
+            </span>
+            {!isPremium && <span style={{fontSize:12,color:TXT3}}>{lang==="es"?"Plan gratuito — señales y spreads bloqueados":"Free plan — signals and spreads locked"}</span>}
+            {isPremium && <span style={{fontSize:12,color:GREEN}}>✓ {lang==="es"?"Acceso completo activo":"Full access active"}</span>}
+          </div>
+        </div>
+
+        {/* Upgrade CTA */}
+        {!isPremium && (
+          <div onClick={onUpgrade} style={{background:`linear-gradient(135deg,${BLUE}18,${PURP}18)`,border:`1px solid ${BLUE}44`,borderRadius:14,padding:"20px 24px",marginBottom:20,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:15,fontWeight:700,color:TXT,marginBottom:4}}>{lang==="es"?"Desbloquea M&A RADAR completo":"Unlock full M&A RADAR"}</div>
+              <div style={{fontSize:12,color:TXT3}}>{lang==="es"?"Señales, spreads, análisis de riesgo, watchlist":"Signals, spreads, risk analysis, watchlist"}</div>
+            </div>
+            <div style={{background:`linear-gradient(135deg,${BLUE},${PURP})`,borderRadius:8,padding:"10px 18px",fontSize:13,color:"#fff",fontWeight:700,whiteSpace:"nowrap",marginLeft:16}}>
+              ⬆ $2.99/mo
+            </div>
+          </div>
+        )}
+
+        {/* Watchlist — Premium only */}
+        {isPremium && (
+          <div style={{background:BG2,border:`1px solid ${BDR}`,borderRadius:14,padding:"24px",marginBottom:20}}>
+            <div style={{fontSize:10,color:TXT3,letterSpacing:1.5,marginBottom:16,textTransform:"uppercase"}}>★ Watchlist ({watchlist.length})</div>
+            {watchlist.length === 0 ? (
+              <div style={{textAlign:"center",padding:"24px",color:TXT3,fontSize:13}}>
+                {lang==="es"?"No tienes deals guardados. Pulsa ★ en cualquier deal.":"No saved deals. Click ★ on any deal."}
+              </div>
+            ) : (
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {allDeals.filter(d=>watchlist.includes(d.id)).map(d=>{
+                  const sc = STAGE_CFG[d.stage]||STAGE_CFG.announced;
+                  return (
+                    <div key={d.id} style={{background:BDR,borderRadius:10,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                      <div>
+                        <div style={{fontSize:13,color:TXT,fontWeight:600,fontFamily:"'JetBrains Mono',monospace"}}>{d.ticker} <span style={{color:TXT3,fontWeight:400}}>· {d.target}</span></div>
+                        <div style={{display:"flex",alignItems:"center",gap:5,marginTop:3}}>
+                          <span style={{width:5,height:5,borderRadius:"50%",background:sc.color,display:"inline-block"}}/>
+                          <span style={{fontSize:10,color:sc.color,fontWeight:600}}>{sc.label}</span>
+                          <span style={{fontSize:10,color:TXT3}}>· {d.dealValue}</span>
+                        </div>
+                      </div>
+                      <div style={{display:"flex",alignItems:"center",gap:10}}>
+                        {d.spreadNum>0 && <div style={{fontSize:13,color:GREEN,fontFamily:"monospace",fontWeight:700}}>+{d.spreadNum}%</div>}
+                        <button onClick={()=>toggleWatch(d.id)} style={{background:"#f59e0b22",border:"1px solid #f59e0b44",borderRadius:5,padding:"3px 8px",fontSize:12,color:"#f59e0b",cursor:"pointer"}}>★</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Settings */}
+        <div style={{background:BG2,border:`1px solid ${BDR}`,borderRadius:14,padding:"24px",marginBottom:20}}>
+          <div style={{fontSize:10,color:TXT3,letterSpacing:1.5,marginBottom:14,textTransform:"uppercase"}}>{lang==="es"?"Ajustes":"Settings"}</div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            <button onClick={onToggleLang} style={{background:BDR,border:`1px solid ${BDR2}`,borderRadius:8,padding:"12px 16px",color:TXT2,fontSize:13,cursor:"pointer",fontFamily:"inherit",textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span>🌐 {lang==="es"?"Idioma: Español":"Language: English"}</span>
+              <span style={{fontSize:11,color:TXT3}}>{lang==="es"?"→ EN":"→ ES"}</span>
+            </button>
+            <button onClick={()=>{ localStorage.removeItem("maradar_onboarded"); navigate("/dashboard"); }} style={{background:BDR,border:`1px solid ${BDR2}`,borderRadius:8,padding:"12px 16px",color:TXT2,fontSize:13,cursor:"pointer",fontFamily:"inherit",textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span>🎓 {lang==="es"?"Ver tutorial de nuevo":"See tutorial again"}</span>
+              <span style={{fontSize:11,color:TXT3}}>→</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Danger zone */}
+        <div style={{background:BG2,border:"1px solid #ef444422",borderRadius:14,padding:"24px"}}>
+          <div style={{fontSize:10,color:"#ef4444",letterSpacing:1.5,marginBottom:14,textTransform:"uppercase"}}>{lang==="es"?"Zona peligrosa":"Danger zone"}</div>
+          <button onClick={async()=>{ await onLogout(); }} style={{width:"100%",background:"transparent",border:`1px solid ${BDR2}`,borderRadius:8,padding:"12px 16px",color:TXT3,fontSize:13,cursor:"pointer",fontFamily:"inherit",marginBottom:8,textAlign:"left"}}>
+            ↩ {lang==="es"?"Cerrar sesión":"Sign out"}
+          </button>
+          <button onClick={async()=>{
+            if(window.confirm(lang==="es"?"¿Seguro? Esta acción no se puede deshacer.":"Are you sure? This cannot be undone.")) {
+              await supabase.rpc("request_data_deletion",{p_user_id:user?.id});
+              await supabase.auth.signOut();
+            }
+          }} style={{width:"100%",background:"#ef444411",border:"1px solid #ef444433",borderRadius:8,padding:"12px 16px",color:"#ef4444",fontSize:13,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>
+            🗑 {lang==="es"?"Solicitar eliminación de cuenta (GDPR Art. 17)":"Request account deletion (GDPR Art. 17)"}
+          </button>
+          <div style={{fontSize:11,color:"#334155",marginTop:8,lineHeight:1.6}}>
+            {lang==="es"?"Tu cuenta será eliminada en 30 días.":"Your account will be deleted within 30 days."}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
 function AppInner() {
   const [user,      setUser]      = useState(null);
@@ -2218,6 +2339,19 @@ function AppInner() {
         <Route path="/dashboard/deal/:ticker" element={
           user
             ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowUpgrade(true)} onToggleLang={toggleLang} lang={lang}/>
+            : <Navigate to="/" replace/>
+        }/>
+        <Route path="/profile" element={
+          user
+            ? <ProfilePage user={user} onLogout={handleLogout} onUpgrade={()=>setShowUpgrade(true)} onToggleLang={toggleLang} lang={lang}
+                watchlist={JSON.parse(localStorage.getItem("maradar_watchlist")||"[]")}
+                toggleWatch={(id)=>{
+                  const wl = JSON.parse(localStorage.getItem("maradar_watchlist")||"[]");
+                  const next = wl.includes(id)?wl.filter(x=>x!==id):[...wl,id];
+                  localStorage.setItem("maradar_watchlist",JSON.stringify(next));
+                }}
+                allDeals={DEALS}
+              />
             : <Navigate to="/" replace/>
         }/>
         <Route path="*" element={<Navigate to="/" replace/>}/>
