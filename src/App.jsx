@@ -1268,6 +1268,7 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
         * { box-sizing:border-box; margin:0; padding:0; }
+        body, div, span, p, button, input { font-size:14px; }
         ::-webkit-scrollbar { width:4px; }
         ::-webkit-scrollbar-track { background:transparent; }
         ::-webkit-scrollbar-thumb { background:${BDR2}; border-radius:99px; }
@@ -1332,7 +1333,11 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
                   </button>
                 )}
                 <button onClick={onToggleLang} style={{background:"transparent",border:`1px solid ${BDR2}`,borderRadius:7,padding:"4px 8px",color:TXT3,fontSize:10,cursor:"pointer",fontFamily:"inherit"}}>{lang==="es"?"EN":"ES"}</button>
-                <button onClick={onLogout} style={{background:"transparent",border:`1px solid ${BDR2}`,borderRadius:7,padding:"4px 8px",color:TXT3,fontSize:10,cursor:"pointer",fontFamily:"inherit"}}>↩</button>
+                <div style={{position:"relative"}}>
+                  <button onClick={()=>setTab("profile")} style={{background:tab==="profile"?BLUE+"22":"transparent",border:`1px solid ${tab==="profile"?BLUE+"66":BDR2}`,borderRadius:7,padding:"5px 10px",color:tab==="profile"?BLUE:TXT3,fontSize:11,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
+                    👤 {user?.email?.split("@")[0]}
+                  </button>
+                </div>
               </>
             ) : (
               <>
@@ -1448,7 +1453,7 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
                 {/* Danger zone */}
                 <div style={{borderTop:`1px solid ${BDR}`,paddingTop:16}}>
                   <div style={{fontSize:9,color:"#ef4444",letterSpacing:1.5,marginBottom:8,textTransform:"uppercase"}}>{lang==="es"?"Zona peligrosa":"Danger zone"}</div>
-                  <button onClick={onLogout} style={{width:"100%",background:"transparent",border:"1px solid #1e3a5f",borderRadius:8,padding:"10px 14px",color:TXT3,fontSize:12,cursor:"pointer",fontFamily:"inherit",marginBottom:8,textAlign:"left"}}>
+                  <button onClick={async()=>{ await onLogout(); }} style={{width:"100%",background:"transparent",border:"1px solid #1e3a5f",borderRadius:8,padding:"12px 14px",color:"#94a3b8",fontSize:13,cursor:"pointer",fontFamily:"inherit",marginBottom:8,textAlign:"left",fontWeight:500}}>
                     ↩ {lang==="es"?"Cerrar sesión":"Sign out"}
                   </button>
                   <button onClick={async()=>{
@@ -1636,6 +1641,7 @@ function Landing({onEnter, onToggleLang, lang}) {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
         *{box-sizing:border-box}
         body,div,h1,h2,h3,p,span,section,nav,footer,ul,li{margin:0;padding:0}
+        body,div,span,p,button,input{font-size:15px}
         ::-webkit-scrollbar{width:4px}
         ::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:99px}
         @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
