@@ -883,7 +883,7 @@ function DealCard({deal, onClick, selected, isPremium, onUpgrade, watched, onTog
 }
 
 // ─── DETAIL PANEL ─────────────────────────────────────────────────────────────
-function DetailPanel({deal, isPremium, onUpgrade}) {
+function DetailPanel({deal, isPremium, onUpgrade, allDeals=[], lang="es"}) {
   const t = useT();
   if (!deal) return (
     <div style={{height:"100%", display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:10, color:BDR2}}>
@@ -1028,7 +1028,7 @@ function DetailPanel({deal, isPremium, onUpgrade}) {
 
       {/* Source */}
       {deal.sourceUrl && (
-        <div style={{paddingTop:12, borderTop:`1px solid ${BDR}`}}>
+        <div style={{paddingTop:12, borderTop:`1px solid ${BDR}`, marginBottom:16}}>
           <a href={deal.sourceUrl} target="_blank" rel="noopener noreferrer"
             style={{fontSize:10, color:TXT3, textDecoration:"none", display:"flex", alignItems:"center", gap:4}}
             onMouseEnter={e=>e.currentTarget.style.color=BLUE}
@@ -1038,6 +1038,69 @@ function DetailPanel({deal, isPremium, onUpgrade}) {
           </a>
         </div>
       )}
+
+      {/* SIMILAR DEALS */}
+      {(() => {
+        const similar = allDeals.filter(d =>
+          d.id !== deal.id &&
+          d.status === "active" &&
+          (d.sectorKey === deal.sectorKey || d.stage === deal.stage)
+        ).slice(0, 3);
+        if (similar.length === 0) return null;
+        return (
+          <div style={{marginTop:8}}>
+            <div style={{fontSize:10, color:TXT3, letterSpacing:2, textTransform:"uppercase", marginBottom:12, paddingBottom:8, borderTop:`1px solid ${BDR}`, paddingTop:16}}>
+              {lang==="es" ? "Deals similares" : "Similar deals"}
+            </div>
+            <div style={{display:"flex", flexDirection:"column", gap:8}}>
+              {similar.map(d => {
+                const sc = STAGE_CFG[d.stage] || STAGE_CFG.announced;
+                return (
+                  <div key={d.id} style={{background:BDR, borderRadius:8, padding:"10px 14px", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                    <div>
+                      <div style={{fontSize:12, color:TXT, fontWeight:600, fontFamily:"'JetBrains Mono',monospace"}}>{d.ticker} <span style={{color:TXT3, fontWeight:400, fontSize:11}}>· {d.target}</span></div>
+                      <div style={{display:"flex", alignItems:"center", gap:5, marginTop:3}}>
+                        <span style={{width:5,height:5,borderRadius:"50%",background:sc.color,display:"inline-block"}}/>
+                        <span style={{fontSize:9, color:sc.color, fontWeight:600}}>{sc.label}</span>
+                        <span style={{fontSize:9, color:TXT3}}>· {d.dealValue}</span>
+                      </div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      {isPremium && d.spreadNum > 0
+                        ? <div style={{fontSize:12, color:GREEN, fontFamily:"monospace", fontWeight:700}}>+{d.spreadNum}%</div>
+                        : <div style={{fontSize:10, color:BDR2}}>🔒</div>
+                      }
+                      <div style={{fontSize:9, color:TXT3, marginTop:2}}>{d.sector}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* DEAL CONTEXT */}
+      <div style={{marginTop:16, background:BDR, borderRadius:10, padding:"14px 16px"}}>
+        <div style={{fontSize:10, color:TXT3, letterSpacing:2, textTransform:"uppercase", marginBottom:10}}>
+          {lang==="es" ? "Contexto del deal" : "Deal context"}
+        </div>
+        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
+          {[
+            [lang==="es"?"Anunciado":"Announced", deal.announced || "—"],
+            [lang==="es"?"Cierre estimado":"Est. close", deal.expectedClose || "—"],
+            [lang==="es"?"Sector":"Sector", deal.sector || "—"],
+            [lang==="es"?"Región":"Region", deal.region || "—"],
+            [lang==="es"?"Tamaño":"Size", deal.sizeCat === "large" ? ">$10B" : "$1–10B"],
+            [lang==="es"?"Tipo pago":"Payment", deal.paymentType || "—"],
+          ].map(([l,v],i) => (
+            <div key={i}>
+              <div style={{fontSize:9, color:"#334155", letterSpacing:0.8, marginBottom:3, textTransform:"uppercase"}}>{l}</div>
+              <div style={{fontSize:11, color:TXT2, fontFamily:"'JetBrains Mono',monospace"}}>{v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1349,7 +1412,9 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
 
         {/* RIGHT PANEL */}
         <div className="dash-right" style={{overflowY:"auto",padding:"24px 28px"}}>
-          <DetailPanel deal={dealsWithLive.find(d=>d.id===selected?.id)||selected} isPremium={isPremium} onUpgrade={onUpgrade}/>
+          <div style={{position:"sticky",top:0}}>
+            <DetailPanel deal={dealsWithLive.find(d=>d.id===selected?.id)||selected} isPremium={isPremium} onUpgrade={onUpgrade} allDeals={dealsWithLive} lang={lang}/>
+          </div>
         </div>
       </div>
 
