@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect, createContext, useContext } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "./supabase.js";
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
@@ -2106,17 +2107,14 @@ function LoginModal({onClose, onLogin, lang}) {
 }
 
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
-export default function App() {
-  const [view,      setView]      = useState("landing");
+function AppInner() {
   const [user,      setUser]      = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [lang,      setLang]      = useState(() => localStorage.getItem("maradar_lang") || "es");
   const [authReady, setAuthReady] = useState(false);
+  const navigate = useNavigate();
 
-  // Listen to Supabase auth state changes
   useEffect(() => {
-    // Use only onAuthStateChange — it fires INITIAL_SESSION on mount
-    // This avoids the dual-call lock conflict with getSession
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
         if (session?.user) {
@@ -2127,10 +2125,12 @@ export default function App() {
               .eq("id", session.user.id)
               .single();
             setUser({ email: session.user.email, tier: profile?.tier || "free", id: session.user.id });
-            setView("dashboard");
+            if (window.location.pathname === "/" || window.location.pathname === "") {
+              navigate("/dashboard");
+            }
           } catch {
             setUser({ email: session.user.email, tier: "free", id: session.user.id });
-            setView("dashboard");
+            navigate("/dashboard");
           }
         } else {
           setUser(null);
@@ -2139,11 +2139,10 @@ export default function App() {
       }
       if (event === "SIGNED_OUT") {
         setUser(null);
-        setView("landing");
+        navigate("/");
         setAuthReady(true);
       }
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -2155,28 +2154,48 @@ export default function App() {
 
   function handleLogin(userData) {
     setUser(userData);
-    setView("dashboard");
+    navigate("/dashboard");
   }
 
   async function handleLogout() {
     await supabase.auth.signOut();
     setUser(null);
-    setView("landing");
+    navigate("/");
   }
 
   if (!authReady) return (
     <div style={{background:"#030a14",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <div style={{color:"#1e3a5f",fontSize:12,letterSpacing:2,fontFamily:"monospace"}}>M&A RADAR...</div>
+      <LoadingSpinner size={32} color="#3b82f6" text="M&A RADAR"/>
     </div>
   );
 
   return (
     <LangCtx.Provider value={lang}>
-      {view === "dashboard"
-        ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowLogin(true)} onToggleLang={toggleLang} lang={lang}/>
-        : <Landing onEnter={()=>user?setView("dashboard"):setShowLogin(true)} onToggleLang={toggleLang} lang={lang}/>
-      }
+      <Routes>
+        <Route path="/" element={
+          <Landing onEnter={()=>user?navigate("/dashboard"):setShowLogin(true)} onToggleLang={toggleLang} lang={lang}/>
+        }/>
+        <Route path="/dashboard" element={
+          user
+            ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowLogin(true)} onToggleLang={toggleLang} lang={lang}/>
+            : <Navigate to="/" replace/>
+        }/>
+        <Route path="/dashboard/deal/:ticker" element={
+          user
+            ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowLogin(true)} onToggleLang={toggleLang} lang={lang}/>
+            : <Navigate to="/" replace/>
+        }/>
+        <Route path="*" element={<Navigate to="/" replace/>}/>
+      </Routes>
       {showLogin && <LoginModal onClose={()=>setShowLogin(false)} onLogin={handleLogin} lang={lang}/>}
     </LangCtx.Provider>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppInner/>
+    </BrowserRouter>
   );
 }
