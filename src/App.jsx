@@ -1166,7 +1166,7 @@ async function fetchLivePrice(ticker) {
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
-function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
+function MATracker({user, onLogout, onUpgrade, onToggleLang, lang, onSwitchTier}) {
   const t = useT();
   const tier      = user?.tier || "free";
   const isPremium = tier === "investor" || tier === "pro";
@@ -1362,7 +1362,6 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
                       </div>
                       {/* Menu items */}
                       {[
-                        {icon:"🏠", label:lang==="es"?"Mi Dashboard":"My Dashboard", action:()=>{ navigate("/dashboard"); setShowProfileMenu(false); }},
                         {icon:"⚙️", label:lang==="es"?"Mi Perfil":"My Profile", action:()=>{ navigate("/profile"); setShowProfileMenu(false); }},
                         ...(isPremium?[{icon:"★", label:lang==="es"?`Watchlist (${watchlist.length})`:`Watchlist (${watchlist.length})`, action:()=>{ setTab("watchlist"); setShowProfileMenu(false); }}]:[]),
                         {icon:"🌐", label:lang==="es"?"Idioma: Español → EN":"Language: English → ES", action:()=>{ onToggleLang(); setShowProfileMenu(false); }},
@@ -1380,6 +1379,19 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
                           <button onClick={()=>{ onUpgrade(); setShowProfileMenu(false); }} style={{width:"100%",background:`linear-gradient(135deg,${BLUE},${PURP})`,border:"none",borderRadius:8,padding:"9px 12px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
                             ⬆ {lang==="es"?"UPGRADE — $2.99/mes":"UPGRADE — $2.99/mo"}
                           </button>
+                        </div>
+                      )}
+                      {/* DEV MODE — solo visible para el admin */}
+                      {user?.email === "sergirodriguezmartinez@gmail.com" && (
+                        <div style={{padding:"8px 8px 4px",borderTop:`1px solid ${BDR}`,marginTop:4}}>
+                          <div style={{fontSize:9,color:"#334155",letterSpacing:1,padding:"0 4px 6px",textTransform:"uppercase"}}>🛠 Dev — Cambiar tier</div>
+                          <div style={{display:"flex",gap:4}}>
+                            {["free","investor","pro"].map(t => (
+                              <button key={t} onClick={()=>{ onSwitchTier&&onSwitchTier(t); setShowProfileMenu(false); }} style={{flex:1,background:tier===t?BLUE+"33":"transparent",border:`1px solid ${tier===t?BLUE:"#1e293b"}`,borderRadius:6,padding:"5px 4px",color:tier===t?BLUE:"#475569",fontSize:10,fontWeight:tier===t?700:400,cursor:"pointer",fontFamily:"inherit",textTransform:"uppercase"}}>
+                                {t}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       )}
                       <div style={{padding:"8px 8px 4px",borderTop:`1px solid ${BDR}`,marginTop:4}}>
@@ -2319,6 +2331,10 @@ function AppInner() {
     navigate("/");
   }
 
+  function handleSwitchTier(tier) {
+    setUser(prev => prev ? {...prev, tier} : prev);
+  }
+
   if (!authReady) return (
     <div style={{background:"#030a14",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <LoadingSpinner size={32} color="#3b82f6" text="M&A RADAR"/>
@@ -2333,12 +2349,12 @@ function AppInner() {
         }/>
         <Route path="/dashboard" element={
           user
-            ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowUpgrade(true)} onToggleLang={toggleLang} lang={lang}/>
+            ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowUpgrade(true)} onToggleLang={toggleLang} lang={lang} onSwitchTier={handleSwitchTier}/>
             : <Navigate to="/" replace/>
         }/>
         <Route path="/dashboard/deal/:ticker" element={
           user
-            ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowUpgrade(true)} onToggleLang={toggleLang} lang={lang}/>
+            ? <MATracker user={user} onLogout={handleLogout} onUpgrade={()=>setShowUpgrade(true)} onToggleLang={toggleLang} lang={lang} onSwitchTier={handleSwitchTier}/>
             : <Navigate to="/" replace/>
         }/>
         <Route path="/profile" element={
