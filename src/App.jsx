@@ -1411,10 +1411,8 @@ function MATracker({user, onLogout, onUpgrade, onToggleLang, lang}) {
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="dash-right" style={{overflowY:"auto",padding:"24px 28px"}}>
-          <div style={{position:"sticky",top:0}}>
-            <DetailPanel deal={dealsWithLive.find(d=>d.id===selected?.id)||selected} isPremium={isPremium} onUpgrade={onUpgrade} allDeals={dealsWithLive} lang={lang}/>
-          </div>
+        <div className="dash-right" style={{overflowY:"auto",padding:"24px 28px",alignSelf:"flex-start",position:"sticky",top:0,maxHeight:"calc(100vh - 120px)",overflowY:"auto"}}>
+          <DetailPanel deal={dealsWithLive.find(d=>d.id===selected?.id)||selected} isPremium={isPremium} onUpgrade={onUpgrade} allDeals={dealsWithLive} lang={lang}/>
         </div>
       </div>
 
